@@ -1,134 +1,46 @@
 //constant for time delay of data collection
 unsigned int DELAYTIME = 10000;
 unsigned long iteration = 1;
-//define vairables
-#define MS_PIN A0
-#define TS_PIN A1
-#define MC_PIN 13
-#define NUM_ITERATIONS 10000
-#define MOISTURE_THRESHOLD 0
-#define MILI_PER_SECOND 1
-#define DELAY_TIME 60000
-
-int moistureContent=0;
-int waterUsed=0;
-long moistureReading=0;
-long temperatureReading=0;
-char** piSignal;
+//initialize average values
+float avg0=0;
+float avg1=0;
+float avg2=0;
+float avg3=0;
 // the setup routine runs once when you press reset:
 void setup() {
-  pinMode(MC_PIN, OUTPUT);
   // initialize serial communication at 9600 bits per second:
   Serial.begin(9600);
 }
-
+// the loop routine runs over and over again forever:
 void loop() {
-  //TODO Wait for pi signal message
-  //piSignal = fancyReadFromPi;
-  takeReading(&moistureReading, &temperatureReading);
-  if (recievedMessage())
-  {
-    if (strcmp(piSignal[0],"READ")==0)
-    {
-        sendToPi(moistureReading, temperatureReading, waterUsed);
-        waterUsed = 0;
-    }
-    else if(strcmp(piSignal[0],"APPLY_NEW_MOISTURE_CONTENT")==0)
-    {
-        moistureContent = atoi(piSignal[1]);
-    }
-  }
-  if(needsWater(moistureReading))
-  {
-    waterUsed += addWater(moistureReading);
-  }
+  // read the input on analog pin 0:
+  int sensorValue0 = analogRead(A0);
+  int sensorValue1 = analogRead(A1);
+  int sensorValue2 = analogRead(A2);
+  int sensorValue3 = analogRead(A3);
+  // Convert the analog reading (which goes from 0 - 1023) to a voltage (0 - 5V) and average:
+  avg0 = (iteration*avg0+sensorValue0)/(iteration+1);
+  avg1 = (iteration*avg1+sensorValue1)/(iteration+1);
+  avg2 = (iteration*avg2+sensorValue2)/(iteration+1);
+  avg3 = (iteration*avg3+sensorValue3)/(iteration+1);
+  if (iteration%DELAYTIME == 0) { 
+  // print out the values
+  Serial.print("1:");
+  Serial.print(avg0);
+  Serial.print(",  2:");
+  Serial.print(avg1);
+  Serial.print(",  3:");
+  Serial.print(avg2);
+  Serial.print(",  4:");
+  Serial.println(avg3);
   
-  delay(DELAY_TIME);
-}
-
-char recievedMessage()
-{
-   return 1;//TODO
-}
-
-void takeReading(long *moistureReading, long *temperatureReading)
-{
-  long prevMoistureVal = 0;
-  *moistureReading = 0;
-  *temperatureReading = 0;
-  int i;
-  while(!averagingThreshold(prevMoistureVal, *moistureReading))
-  {   
-    for(i = 0; i < NUM_ITERATIONS ; i++)
-    { 
-      *moistureReading += analogRead(MS_PIN);
-      *temperatureReading += analogRead(TS_PIN);
-    }
-    prevMoistureVal = *moistureReading;
-    *moistureReading = *moistureReading/NUM_ITERATIONS;
-    *temperatureReading = *temperatureReading/NUM_ITERATIONS;
-  }
-  *moistureReading = rawToMoisturePercentage(*moistureReading);
-  *temperatureReading = rawToTemperaturePercentage(*temperatureReading);
-}
-
-char averagingThreshold(long prev, long current)
-{
-  if((current < prev + 1) && (current > prev - 1))
-  {
-    return 1;
-  }
-  return 0;
-}
-
-char needsWater(int moistureReading)
-{
-  if(moistureReading < moistureContent - MOISTURE_THRESHOLD)
-  {
-    return 1;
-  }
-  return 0;    
-}
-
-int addWater(int moistureReading)
-{
-  int neededWater = moistureContent - moistureReading;
-  int wateringTime = calculateWateringTime(neededWater);
-  //Activate solenoid for wateringTime ms
-  digitalWrite(MC_PIN, HIGH);
-  delay(wateringTime);
-  digitalWrite(MC_PIN, LOW);
   
-  return calculateWateringAmount(wateringTime);
-}
-
-int calculateWateringTime(int neededWater)
-{
-  return 0;//TODO
-}
-
-int calculateWateringAmount(int wateringTime)
-{
-  return (MILI_PER_SECOND*wateringTime)/1000;
-}
-
-int rawToMoisturePercentage(int moistureRAW)
-{
-  float temp = (float) moistureRAW;
-  if(moistureRAW < 591)
-  {
-    return(92.257 * temp - 196.727);
+  //reset the average values
+  avg0=0;
+  avg1=0;
+  avg2=0;
+  avg3=0;
+  iteration = 0;
   }
-  return(6.264 * temp + 572.903);
-}
-
-int rawToTemperaturePercentage(int temperatureRAW)
-{
-  float temp = (float)temperatureRAW;
-  return .211 * temp + 45.843;
-}
-
-void sendToPi(long moistureReading, long temperatureReading, int waterUsed)
-{
-  //TODO 
+  iteration += 1;
 }
