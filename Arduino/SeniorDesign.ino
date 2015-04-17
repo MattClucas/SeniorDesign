@@ -8,7 +8,7 @@ unsigned long iteration = 1;
 #define NUM_ITERATIONS 10000
 #define MOISTURE_THRESHOLD 0
 #define MILI_PER_SECOND 1
-#define DELAY_TIME 60000
+#define DELAY_TIME 1000
 
 int moistureContent=0;
 int waterUsed=0;
@@ -28,7 +28,7 @@ void loop() {
   takeReading(&moistureReading, &temperatureReading);
   if (recievedMessage())
   {
-    if (strcmp(piSignal[0],"READ")==0)
+    if (strcmp(piSignal[0],"READ"))
     {
         sendToPi(moistureReading, temperatureReading, waterUsed);
         waterUsed = 0;
@@ -53,18 +53,18 @@ char recievedMessage()
 
 void takeReading(long *moistureReading, long *temperatureReading)
 {
-  long prevMoistureVal = 0;
+  long prevMoistureVal = -90;
   *moistureReading = 0;
   *temperatureReading = 0;
   int i;
   while(!averagingThreshold(prevMoistureVal, *moistureReading))
   {   
+    prevMoistureVal = *moistureReading;
     for(i = 0; i < NUM_ITERATIONS ; i++)
     { 
       *moistureReading += analogRead(MS_PIN);
       *temperatureReading += analogRead(TS_PIN);
     }
-    prevMoistureVal = *moistureReading;
     *moistureReading = *moistureReading/NUM_ITERATIONS;
     *temperatureReading = *temperatureReading/NUM_ITERATIONS;
   }
@@ -117,9 +117,9 @@ int rawToMoisturePercentage(int moistureRAW)
   float temp = (float) moistureRAW;
   if(moistureRAW < 591)
   {
-    return(92.257 * temp - 196.727);
+    return((196727 + 1000 * temp) / 92257);
   }
-  return(6.264 * temp + 572.903);
+  return((-572903+1000 * temp)/6264);
 }
 
 int rawToTemperaturePercentage(int temperatureRAW)
@@ -130,5 +130,11 @@ int rawToTemperaturePercentage(int temperatureRAW)
 
 void sendToPi(long moistureReading, long temperatureReading, int waterUsed)
 {
-  //TODO 
+      Serial.print("moisture ");
+  Serial.println(moistureReading);
+      Serial.print("temperature ");
+  Serial.println(temperatureReading);
+      Serial.print("h20 ");
+  Serial.println(waterUsed);
+  Serial.println();
 }
