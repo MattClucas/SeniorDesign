@@ -125,7 +125,6 @@ int rawToMoisturePercentage(int moistureRAW)
 int rawToTemperaturePercentage(int temperatureRAW)
 {
   float temp = (float)temperatureRAW;
-  Serial.println(temperatureRAW);
   return .168 * temp + 47.704;
 }
 
