@@ -8,7 +8,7 @@ unsigned long iteration = 1;
 #define NUM_ITERATIONS 10000
 #define MOISTURE_THRESHOLD 0
 #define MILI_PER_SECOND 1
-#define DELAY_TIME 1000
+#define DELAY_TIME 60000
 
 int moistureContent=0;
 int waterUsed=0;
@@ -19,29 +19,29 @@ char** piSignal;
 void setup() {
   pinMode(MC_PIN, OUTPUT);
   // initialize serial communication at 9600 bits per second:
-  Serial.begin(9600);
+  Serial.begin(115200);
 }
 
 void loop() {
-  //TODO Wait for pi signal message
-  //piSignal = fancyReadFromPi;
   takeReading(&moistureReading, &temperatureReading);
-  if (recievedMessage())
-  {
-    if (strcmp(piSignal[0],"READ"))
-    {
-        sendToPi(moistureReading, temperatureReading, waterUsed);
-        waterUsed = 0;
-    }
-    else if(strcmp(piSignal[0],"APPLY_NEW_MOISTURE_CONTENT")==0)
-    {
-        moistureContent = atoi(piSignal[1]);
-    }
-  }
-  if(needsWater(moistureReading))
-  {
-    waterUsed += addWater(moistureReading);
-  }
+  sendToPi(moistureReading, temperatureReading, waterUsed);
+  waterUsed = 0;
+//  if (recievedMessage())
+//  {
+//    if (strcmp(piSignal[0],"READ"))
+//    {
+//        sendToPi(moistureReading, temperatureReading, waterUsed);
+//        waterUsed = 0;
+//    }
+//    else if(strcmp(piSignal[0],"APPLY_NEW_MOISTURE_CONTENT")==0)
+//    {
+//        moistureContent = atoi(piSignal[1]);
+//    }
+//  }
+//  if(needsWater(moistureReading))
+//  {
+//    waterUsed += addWater(moistureReading);
+//  }
   
   delay(DELAY_TIME);
 }
@@ -125,16 +125,18 @@ int rawToMoisturePercentage(int moistureRAW)
 int rawToTemperaturePercentage(int temperatureRAW)
 {
   float temp = (float)temperatureRAW;
-  return .211 * temp + 45.843;
+  Serial.println(temperatureRAW);
+  return .168 * temp + 47.704;
 }
 
 void sendToPi(long moistureReading, long temperatureReading, int waterUsed)
 {
-      Serial.print("moisture ");
-  Serial.println(moistureReading);
-      Serial.print("temperature ");
-  Serial.println(temperatureReading);
-      Serial.print("h20 ");
-  Serial.println(waterUsed);
+  Serial.print("{M:");
+  Serial.print(moistureReading);
+  Serial.print(",T:");
+  Serial.print(temperatureReading);
+  Serial.print(",W:");
+  Serial.print(waterUsed);
+  Serial.print("}");
   Serial.println();
 }
