@@ -115,7 +115,7 @@ int calculateWateringAmount(int wateringTime)
 int rawToMoisturePercentage(int moistureRAW)
 {
   float temp = (float) moistureRAW;
-  if(moistureRAW < 591)
+  if(moistureRAW < 629)
   {
     return((196727 + 1000 * temp) / 92257);
   }
