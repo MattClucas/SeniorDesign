@@ -1,3 +1,10 @@
+unsigned long TIME_BETWEEN_READINGS = 10* 60 * 1000; // 10 mins* 60 seconds* 1000 ms //30 seconds
+unsigned long WATERING_TIME = 30 * 1000; // 30 seconds * 1000 ms ~ 27.5 mL
+
+// the water level which turns on the pump to water the plant
+int PLANT_WATER_THRESHOLDS[] = {300, 300, 300, 300};
+int NUM_PLANTS = 4;
+
 int pump_pins[] = {2, 3, 4, 5};
 int mux_sel0 = 8;
 int mux_sel1 = 9;
@@ -6,7 +13,7 @@ int mux_sel3 = 11;
 int mux_output = A0;
 int mux_output2 = A1;
 
-int incomingByte = 0;
+int currentPlant = 0;
 int soil_sensor = 0;
 int leaf_sensor = 0;
 
@@ -27,28 +34,27 @@ void setup() {
 }
 
 void loop() {
-  if (Serial.available() > 0) {
-    incomingByte = Serial.read();
-    switch(incomingByte) {
-      case '1':
+    // turn on mux for appropriate plant
+    switch(currentPlant) {
+      case 0:
         digitalWrite(mux_sel0, LOW);
         digitalWrite(mux_sel1, LOW);
         digitalWrite(mux_sel2, LOW);
         digitalWrite(mux_sel3, LOW);
         break;
-      case '2':
+      case 1:
         digitalWrite(mux_sel0, HIGH);
         digitalWrite(mux_sel1, LOW);
         digitalWrite(mux_sel2, LOW);
         digitalWrite(mux_sel3, LOW);
         break;
-      case '3':
+      case 2:
         digitalWrite(mux_sel0, LOW);
         digitalWrite(mux_sel1, HIGH);
         digitalWrite(mux_sel2, LOW);
         digitalWrite(mux_sel3, LOW);
         break;
-      case '4':
+      case 3:
         digitalWrite(mux_sel0, HIGH);
         digitalWrite(mux_sel1, HIGH);
         digitalWrite(mux_sel2, LOW);
@@ -57,16 +63,52 @@ void loop() {
       default:
         break;
     }
+    
+    // read sensors of plant
     soil_sensor = analogRead(mux_output);
     leaf_sensor = analogRead(mux_output2);
+    boolean turnOnPump = PLANT_WATER_THRESHOLDS[currentPlant] < soil_sensor;
+
+    // write output for plant
     Serial.print("Plant #");
-    Serial.print(incomingByte - 48);
+    Serial.print(currentPlant);
     Serial.print(": Soil: ");
     Serial.print(soil_sensor);
     Serial.print(" Leaf: ");
-    Serial.println(leaf_sensor);
-    digitalWrite(pump_pins[incomingByte - 49], LOW);
-    delay(5000); 
-    digitalWrite(pump_pins[incomingByte - 49], HIGH);
-  }
+    Serial.print(leaf_sensor);
+    Serial.print(" Pump_on: ");
+    Serial.print(turnOnPump);
+    Serial.print(" Time: ");
+    Serial.println(" TODO");  // TODO: write the current time
+    
+    // turn on the pump if needed
+    if(turnOnPump)
+    {
+        // turn on pumps
+        digitalWrite(pump_pins[currentPlant], LOW);
+        delay(WATERING_TIME); 
+        digitalWrite(pump_pins[currentPlant], HIGH);
+    }
+
+    // increment current plant
+    if (currentPlant == NUM_PLANTS-1)
+    {
+        currentPlant = 0;
+        int i=0;
+        for(;i<600;i++)
+        {
+//            Serial.println("waiting");
+            delay(1000);
+        }
+//        unsigned long startTime = millis();
+//        while(millis()-startTime < TIME_BETWEEN_READINGS)
+//        {
+//            delay(1000);
+//        }
+//        delay(TIME_BETWEEN_READINGS);
+    }
+    else
+    {
+        currentPlant++;
+    }
 }
