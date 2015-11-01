@@ -75,7 +75,7 @@ void loop() {
     Serial.print(";soil:");
     Serial.print(soil_sensor);
     Serial.print(";leaf:");
-    Serial.print(leaf_sensor);
+    Serial.print(getThickness(leaf_sensor));
     Serial.print(";watered:");
     Serial.print(turnOnPump);
     Serial.println(";");
@@ -110,4 +110,9 @@ void loop() {
     {
         currentPlant++;
     }
+}
+
+float getThickness(int raw)
+{
+    return -(2 *(250 * averageReading - 167919)) / 54887;
 }
