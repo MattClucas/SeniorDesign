@@ -112,7 +112,7 @@ void loop() {
     }
 }
 
-float getThickness(int raw)
+float getThickness(long raw)
 {
-    return -(2 *(250 * averageReading - 167919)) / 54887;
+    return -(2 *(250 * raw - 167919)) / 54887.0;
 }
