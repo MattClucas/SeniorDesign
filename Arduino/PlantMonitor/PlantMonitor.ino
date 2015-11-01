@@ -70,16 +70,15 @@ void loop() {
     boolean turnOnPump = PLANT_WATER_THRESHOLDS[currentPlant] < soil_sensor;
 
     // write output for plant
-    Serial.print("Plant #");
+    Serial.print("plant_id:");
     Serial.print(currentPlant);
-    Serial.print(": Soil: ");
+    Serial.print(";soil:");
     Serial.print(soil_sensor);
-    Serial.print(" Leaf: ");
+    Serial.print(";leaf:");
     Serial.print(leaf_sensor);
-    Serial.print(" Pump_on: ");
+    Serial.print(";watered:");
     Serial.print(turnOnPump);
-    Serial.print(" Time: ");
-    Serial.println(" TODO");  // TODO: write the current time
+    Serial.println(";");
     
     // turn on the pump if needed
     if(turnOnPump)
