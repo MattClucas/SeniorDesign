@@ -1,4 +1,4 @@
-int TIME_BETWEEN_READINGS_SECONDS = 10*60;// 10 mins* 60 seconds
+int TIME_BETWEEN_READINGS_SECONDS = 5;//10*60;// 10 mins* 60 seconds
 unsigned long WATERING_TIME_MILLISECONDS = 3 * 1000; // 30 seconds * 1000 ms ~ 27.5 mL
 
 // the water level which turns on the pump to water the plant
@@ -113,9 +113,9 @@ float getThickness(long raw)
 
 void handleSerialMsg()
 {
-  boolean moreData = true;
-  while(moreData)
+  while(true)
   {
+    Serial.println("Entering handleSerialMsg() while loop");
     String input = "";
     if (Serial.available() > 0) {
       input = Serial.readString();
@@ -139,15 +139,22 @@ void handleSerialMsg()
       // acknowledge message to controller
       sendAck(ack);
       
-      // try to read more if there is a 'M'ore data header byte
-      if(moreData = input[0] == 'M')
+      // break if there is no more to read
+      if(input[0] != 'M')
       {
-          // wait a little bit for the controller to recieve the ack and send more data
-          delay(2000);
+          Serial.println("No more to read.");
+          break;
       }
+      
+      // at this point there is more to read so we wait
+      // wait a little bit for the controller to recieve the ack and send more data
+      Serial.println("More Data");
+      delay(2000);
     }
+    // nothing to read, continue on
     else
     {
+        Serial.println("Leaving handleSerialMsg()");
         break;
     }
   }
@@ -160,22 +167,32 @@ void sendAck(String ack)
 
 String setWaterContent(String packet)
 {
-    // make sure packet is correct format
-    if (packet.length() % 2 != 0)
+    Serial.println("Entering setWaterContent()");
+    
+    // break data into two strings, plant index and water content for that plant
+    int indexOfComma = packet.indexOf(',');
+    String plantIndexStr = packet.substring(2, indexOfComma);
+    String waterContentStr = packet.substring(indexOfComma+1);
+    
+    Serial.print("plantIndexStr ");
+    Serial.print(plantIndexStr);
+    Serial.print(", waterContentStr ");
+    Serial.println(waterContentStr);
+    
+    int plantIndex = plantIndexStr.toInt();
+    int waterContent = waterContentStr.toInt();
+    
+    Serial.print("plantIndex ");
+    Serial.print(plantIndex);
+    Serial.print(", waterContent ");
+    Serial.println(waterContent);
+    
+    if (plantIndex < NUM_PLANTS)
     {
-        return "Number of bytes in message must be even for setting water content.";
-    }
-
-    // set water content levels
-    int i;
-    for(i=2; i<packet.length(); i+=2)
-    {
-        if (packet[i]< NUM_PLANTS)
-        {
-            PLANT_WATER_THRESHOLDS[packet[i]] = packet[i+1];
-        }
+        PLANT_WATER_THRESHOLDS[plantIndex] = waterContent;
     }
     
+    int i;
     for(i=0; i<NUM_PLANTS;i++)
     {
       Serial.print("plant:");
