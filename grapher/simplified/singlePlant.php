@@ -8,20 +8,19 @@
         <title>Plant Monitor</title>
 
         <!-- Style sheets -->
-        <link rel="stylesheet" type="text/css" href="/grapher/css/bootstrap.min.css">
-        <link rel="stylesheet" type="text/css" href="/grapher/css/style.css">
-        <link rel="stylesheet" type="text/css" href="/grapher/css/bootstrap-theme.min.css">
+        <link rel="stylesheet" type="text/css" href="css/bootstrap.min.css">
+        <link rel="stylesheet" type="text/css" href="css/style.css">
+        <link rel="stylesheet" type="text/css" href="css/bootstrap-theme.min.css">
         
         <!-- Javascript includes -->
-        <script type="text/javascript" src="/grapher/js/Chart.Core.js"></script>
-        <script type="text/javascript" src="/grapher/js/Chart.Bar.js"></script>
-        <script type="text/javascript" src="/grapher/js/Chart.Line.js"></script>
-        <script type="text/javascript" src="/grapher/js/jquery-latest.js"></script>
-        <script type="text/javascript" src="/grapher/js/jquery.tablesorter.min.js"></script>
-        <script type="text/javascript" src="/grapher/js/jquery-2.1.3.min.js"></script>
-        <script type="text/javascript" src="/grapher/js/bootstrap.min.js"></script>
-        <script type="text/javascript" src="/grapher/js/jquery.metadata.js"></script>
-        <script type="text/javascript" src="/grapher/js/jquery.tablesorter.js"></script>
+        <script type="text/javascript" src="js/Chart.Core.js"></script>
+        <script type="text/javascript" src="js/Chart.Bar.js"></script>
+        <script type="text/javascript" src="js/Chart.Line.js"></script>
+        <script type="text/javascript" src="js/jquery-latest.js"></script>
+        <script type="text/javascript" src="js/jquery.tablesorter.min.js"></script>
+        <script type="text/javascript" src="js/jquery-2.1.3.min.js"></script>
+        <script type="text/javascript" src="js/bootstrap.min.js"></script>
+        <script type="text/javascript" src="js/jquery.metadata.js"></script>
         <style>
             .graphs {
                 width: 75%;
