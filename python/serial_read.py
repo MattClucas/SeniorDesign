@@ -1,3 +1,4 @@
+#!/usr/bin/python
 import serial
 import MySQLdb
 conn = MySQLdb.connect(host= "localhost",

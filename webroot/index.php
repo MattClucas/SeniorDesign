@@ -23,14 +23,20 @@
         <script type="text/javascript" src="js/bootstrap.min.js"></script>
         <script type="text/javascript" src="js/jquery.metadata.js"></script>
         <style>
-            .graphs {
+            .content {
                 width: 75%;
                 margin-left: 12.5%;
             }
         </style>
     </head>
     <body>
-        <div id="HTMLBlock" class="graphs">
+        <div class="content">
+            <h1>Plant Monitor</h1>
+            <div>
+                <a href="changeSettings.php">Click here to change plant settings</a>
+            </div>
+        </div>
+        <div id="HTMLBlock" class="content">
             <?php 
                 $NUM_LABELS = 20;
 
