@@ -1,4 +1,54 @@
 #!/bin/bash
-sudo mount /dev/sda1 mnt
-ifconfig > mnt/ipAddress.txt
-sudo umount mnt
+
+# declare directories and file names to use
+dir=".ip/"
+lsODevDir=$dir"original.txt"
+lsNDevDir=$dir"new.txt"
+diffDevDir=$dir"diff.txt"
+
+# check if the directory we will be working in exists, if not, create it
+if [ ! -d "$dir" ]; then
+    mkdir $dir
+fi
+
+# get an initial reading of the /dev folder and write to a file
+ls "/dev" > $lsODevDir 2> "/dev/null"
+
+# wait a while
+while [ 1 ]; do
+    sleep 5
+
+    # get second reading of the /dev folder and write to a new file
+    ls "/dev" > $lsNDevDir 2> "/dev/null"
+
+    # diff the files
+    diff $lsODevDir $lsNDevDir > $diffDevDir
+    while IFS='' read -r line || [[ -n "$line" ]]; do
+        # lines of diff output that start with ">" are new devices
+        # the lines will be "> device" and we just want the device part
+        if [[ ${line:0:1} == ">" ]]; then
+            # parse the device name
+            device=($line)
+            device=${device[1]}
+
+            # get the device name
+            devicefile="/dev/"$device
+            
+            # make mount directory
+            mountPoint=$dir$device"mntpnt"
+            mkdir $mountPoint 2> "/dev/null"
+            
+            # mount the device 
+            sudo mount -t auto $devicefile $mountPoint 2> "/dev/null"
+            
+            # write the ifconfig output
+            ifconfig > $mountPoint"/ipaddress.txt"
+            
+            # unmount the device
+            sudo umount $mountPoint 2> "/dev/null"
+            
+            # remove mount directory
+            rmdir $mountPoint 2> "/dev/null"
+        fi
+    done < "$diffDevDir"
+done
