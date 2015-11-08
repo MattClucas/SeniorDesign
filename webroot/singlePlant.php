@@ -22,16 +22,22 @@
         <script type="text/javascript" src="js/bootstrap.min.js"></script>
         <script type="text/javascript" src="js/jquery.metadata.js"></script>
         <style>
-            .graphs {
+            .content {
                 width: 75%;
                 margin-left: 12.5%;
             }
         </style>
     </head>
     <body>
-        <!-- hello from jacob nowalskdj-->
+        <div class="content">
+            <h1>Plant <?php echo $_GET['id'];?> Statistics</h1>
+            <div>
+                <a href="changeSettings.php">Click here to change plant settings</a></br>
+                <a href="index.php">Home</a></br></br>
+            </div>
+        </div>
         <div id="content" class="wide">
-            <div id="HTMLBlock" class="graphs">
+            <div id="HTMLBlock" class="content">
                 <?php
                     /*
                      * Query the database and get all necessary data for this plant id.
@@ -129,7 +135,7 @@
                         window.myBar = new Chart(canvasbar).Line(moistureDataSet, {
                             responsive : true
                         });
-                        var canvasbar = document.getElementById("temperatureCanvas").getContext("2d");
+                        var canvasbar = document.getElementById("thicknessCanvas").getContext("2d");
                         window.myBar = new Chart(canvasbar).Line(thicknessDataSet, {
                             responsive : true
                         });
@@ -143,7 +149,7 @@
                 <h2>Moisture Content</h2>
                 <canvas id="moistureCanvas"></canvas>
                 <h2>Thickness Millimeters</h2>
-                <canvas id="temperatureCanvas"></canvas>
+                <canvas id="thicknessCanvas"></canvas>
                 <h2>Water Used (mL)</h2>
                 <canvas id="waterUsageCanvas"></canvas>
                 <div id="copyright">
