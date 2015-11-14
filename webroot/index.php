@@ -33,7 +33,8 @@
         <div class="content">
             <h1>Plant Monitor</h1>
             <div>
-                <a href="changeSettings.php">Click here to change plant settings</a>
+                <a href="changeSettings.php">Click here to change plant settings</a></br>
+                <a href="downloadData.php">Click here to download all data</a>
             </div>
         </div>
         <div id="HTMLBlock" class="content">
