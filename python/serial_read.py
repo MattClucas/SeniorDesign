@@ -1,6 +1,8 @@
 #!/usr/bin/python
 import serial
 import MySQLdb
+import smtplib
+from email.mime.text import MIMEText
 conn = MySQLdb.connect(host= "localhost",
                   user="plants",
                   passwd="8SEh2R7LsFQAJnuM",
@@ -87,6 +89,28 @@ def insertPlantData(data):
 		print e
 		conn.rollback()
 		return False	
+		
+# notify by email when water level is low
+def emailAlert():
+	# Open a plain text file for reading.  For this example, assume that
+	# the text file contains only ASCII characters.
+	fp = open('settings/water_content.txt', 'r')
+	# Create a text/plain message
+	msg = MIMEText(fp.read())
+	fp.close()
+
+	# me == the sender's email address
+	# you == the recipient's email address
+	msg['Subject'] = 'The contents of water_content.txt'
+	msg['From'] = 'jamoyer@iastate.edu'
+	msg['To'] = 'clucas@iastate.edu'
+
+	# Send the message via our own SMTP server, but don't include the
+	# envelope header.
+	s = smtplib.SMTP()
+	s.sendmail(me, [you], msg.as_string())
+	s.quit()
+
 
 # initialize number of plants
 numPlants = getNumPlants()
@@ -113,6 +137,7 @@ while 1:
 					readLine = ser.readline().upper().strip()
 					print readLine
 					if readLine == 'ACK':
+						emailAlert()
 						break
 
 			# now that the packets have been sent, update the previous water content 
