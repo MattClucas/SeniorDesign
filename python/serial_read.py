@@ -1,6 +1,9 @@
 #!/usr/bin/python
 import serial
 import MySQLdb
+from email.mime.text import MIMEText
+from email.MIMEBase import MIMEBase
+from email.MIMEMultipart import MIMEMultipart
 conn = MySQLdb.connect(host= "localhost",
                   user="plants",
                   passwd="8SEh2R7LsFQAJnuM",
@@ -109,6 +112,33 @@ def insertPlantData(data):
         conn.rollback()
         return False
 
+# notify by email when water level is low
+def emailAlert():
+	# me == the sender's email address
+	# you == the recipient's email address
+	sender = 'iastateplantalerts@gmail.com'
+	receivers = ['clucas@iastate.edu','jamoyer@iastate.edu']
+	msg = MIMEMultipart()
+	msg['From'] = sender
+	msg['To'] = ','.join(receivers)
+	msg['Subject'] = 'Low Water Alert'
+
+	msg.attach(MIMEText('Too low of water you noob!'))
+	
+	# Send the message via our own SMTP server, but don't include the
+	# envelope header.
+	try:
+		s = smtplib.SMTP('smtp.gmail.com', 587)
+		s.ehlo()
+		s.starttls()
+		s.ehlo()
+		s.login(sender, 'plantpwpw')
+		s.sendmail(sender, ','.join(receivers), msg.as_string())
+		s.quit()
+		print 'sent email'
+	except smtplib.SMTPException, e:
+		print e		
+		
 # initialize number of plants
 numPlants = getNumPlants()
 
@@ -136,6 +166,7 @@ while 1:
                     readLine = ser.readline().upper().strip()
                     print readLine
                     if readLine == 'ACK':
+						emailAlert()
                         break
 
             # now that the packets have been sent, update the previous water content
