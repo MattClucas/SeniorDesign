@@ -1,6 +1,7 @@
 #!/usr/bin/python
 import serial
 import MySQLdb
+import smtplib
 from email.mime.text import MIMEText
 from email.MIMEBase import MIMEBase
 from email.MIMEMultipart import MIMEMultipart
@@ -168,7 +169,8 @@ while 1:
                     if readLine == 'ACK':
                         emailAlert()
                         break
-
+                    if readLine == 'LEAVING HANDLESERIALMSG()':
+                        ser.write(packet)
             # now that the packets have been sent, update the previous water content
             previousWaterContent = waterContent
 
