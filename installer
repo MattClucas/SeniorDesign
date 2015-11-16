@@ -56,9 +56,9 @@ sudo chmod +x $startupUsbsniper || exitMsg "Unable to make usbsniper executable"
 sudo chmod +x $repoUsbsniper || exitMsg "Unable to make usbsniper executable"
 update-rc.d usbsniper defaults
 
-startupSerialread="/etc/init.d/serial_read.py"
-repoSerialread=$DIR"/python/serial_read.py"
-sudo ln -s $repoSerialread $startupSerialread || exitMsg "Unable to link serial_read.py to /etc/init.d/"
-sudo chmod +x $startupSerialread || exitMsg "Unable to make serial_read.py executable"
-sudo chmod +x $repoSerialread || exitMsg "Unable to make serial_read.py executable"
-update-rc.d serial_read.py defaults
+startupSerialread="/etc/init.d/richmondAndHisFlashingLights"
+repoSerialread=$DIR"/bash/richmondAndHisFlashingLights"
+sudo ln -s $repoSerialread $startupSerialread || exitMsg "Unable to link richmondAndHisFlashingLights to /etc/init.d/"
+sudo chmod +x $startupSerialread || exitMsg "Unable to make richmondAndHisFlashingLights executable"
+sudo chmod +x $repoSerialread || exitMsg "Unable to make richmondAndHisFlashingLights executable"
+update-rc.d richmondAndHisFlashingLights defaults
