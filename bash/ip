@@ -45,6 +45,7 @@ while [ 1 ]; do
             
             # write the ifconfig output
             ifconfig > $mountPoint"/ipaddress.txt"
+            wget -O $mountPoint"/plantdata.csv" localhost/downloadData.php
             
             # unmount the device
             sudo umount $mountPoint >>$iplogfile 2>&1
