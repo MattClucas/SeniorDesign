@@ -19,7 +19,6 @@ WATERING_SECONDS = 3
 # declare globals
 waterContent = []
 previousWaterContent = []
-alertSent = getCurrentVolume() < getAlertVolume()
 
 # generates change packets to send to the arduino
 def getPackets():
@@ -164,40 +163,63 @@ def getAlertSubscribers():
 
 # notify by email when water level is low
 def emailAlert():
-    global alertSent
-    if not alertSent:
-        sender = 'iastateplantalerts@gmail.com'
-        receivers = getAlertSubscribers()
-        msg = MIMEMultipart()
-        msg['From'] = sender
-        msg['To'] = ', '.join(receivers)
-        msg['Subject'] = 'Low Water Alert'
+    sender = 'iastateplantalerts@gmail.com'
+    receivers = getAlertSubscribers()
+    msg = MIMEMultipart()
+    msg['From'] = sender
+    msg['To'] = ', '.join(receivers)
+    msg['Subject'] = 'Low Water Alert'
 
-        msg.attach(MIMEText('Your water level is currently at: ' + str(getCurrentVolume()) + ' mL.'))
+    msg.attach(MIMEText('Your water level is currently at: ' + str(getCurrentVolume()) + ' mL.'))
 
-        try:
-            s = smtplib.SMTP('smtp.gmail.com', 587)
-            s.ehlo()
-            s.starttls()
-            s.ehlo()
-            s.login(sender, 'plantpwpw')
-            s.sendmail(sender, receivers, msg.as_string())
-            s.quit()
-            print 'sent email'
-        except smtplib.SMTPException, e:
-            print e
+    try:
+        s = smtplib.SMTP('smtp.gmail.com', 587)
+        s.ehlo()
+        s.starttls()
+        s.ehlo()
+        s.login(sender, 'plantpwpw')
+        s.sendmail(sender, receivers, msg.as_string())
+        s.quit()
+        print 'sent email'
+    except smtplib.SMTPException, e:
+        print e
 
 # Checks the difference in water value and sends an alert if necassary
 def checkWaterVolume(volumeChange):
-    print 'current volume is ' + str(getCurrentVolume())
-    currentVolume = getCurrentVolume()-volumeChange
+    global alertSent
+    currentVolume = getCurrentVolume()
+    # If current volume == max volume we refilled the water container, set alertSent = False
+    if getCurrentVolume() == getMaxVolume():
+        alertSent = False
+        print 'current vol equals max, set alertSent to false'
+    previousWaterContent = currentVolume
+    
+    # If fill line changes we have changed water containers, set alertSent to false
+    global fillLine
+    if fillLine != getMaxVolume():
+        alertSent = False
+        fillLine = getMaxVolume()
+        print 'fillLine changed, set alertSent to false'
+        
+    #Subtract water pumped from current volume
+    print 'previous volume is ' + str(previousWaterContent)
+    currentVolume = currentVolume-volumeChange
     setCurrentVolume(currentVolume)
     print 'current volume is ' + str(getCurrentVolume())
-    if currentVolume < getAlertVolume():
+    
+    #If we have less volume than our alert, send an email to all users
+    if currentVolume < getAlertVolume() and not alertSent:
         emailAlert()
+        alertSent = True
+        print 'alert sent to true after sending email'
 
 # initialize number of plants
 numPlants = getNumPlants()
+
+# See if an email has alerted the user of a low water content
+alertSent = getCurrentVolume() < getAlertVolume()
+print 'alertSent global = ' + str(alertSent)
+fillLine = getMaxVolume()
 
 # main loop
 while 1:
