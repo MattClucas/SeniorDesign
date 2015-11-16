@@ -9,6 +9,10 @@
     }
 
     $settingsRoot = '/plant/settings/';
+    if (!file_exists($settingsRoot) && !mkdir($settingsRoot, 0775))
+    {
+        die("Error: Unable to create /plant/settings/ directory.");
+    }
 
     // set the numPlants.txt file if the post variable is set
     $numPlantsFile = $settingsRoot . 'num_plants.txt';

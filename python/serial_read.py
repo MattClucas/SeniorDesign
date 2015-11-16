@@ -19,6 +19,7 @@ WATERING_SECONDS = 3
 # declare globals
 waterContent = []
 previousWaterContent = []
+alertSent = False
 
 # generates change packets to send to the arduino
 def getPackets():
@@ -55,6 +56,47 @@ def getNumPlants():
     file.close()
     if not isInteger(line):
         raise Exception('Number of Plants is not a number! Fix the settings/num_plants.txt file!')
+    return int(line)
+    
+# reads the max_volume.txt file
+def getMaxVolume():
+    if LOGGING:
+        print "Entering getMaxVolume()"
+    file = open('/plant/settings/max_volume.txt', 'r')
+    line = file.readlines()[0]
+    file.close()
+    if not isInteger(line):
+        raise Exception('Max volume is not a number! Fix the settings/max_volume.txt file!')
+    return int(line)
+    
+# reads the current_volume.txt file
+def getCurrentVolume():
+    if LOGGING:
+        print "Entering getCurrentVolume()"
+    file = open('/plant/settings/current_volume.txt', 'r')
+    line = file.readlines()[0]
+    file.close()
+    if not isInteger(line):
+        raise Exception('Current volume is not a number! Fix the settings/current_volume.txt file!')
+    return int(line)
+    
+# set the current_volume.txt file
+def setCurrentVolume(value):
+    if LOGGING:
+        print "Entering setCurrentVolume()"
+    file = open('/plant/settings/current_volume.txt', 'w')
+    file.write(str(value))
+    file.close()
+    
+# reads the alert_volume.txt file and sets the global numPlants variable
+def getAlertVolume():
+    if LOGGING:
+        print "Entering getAlertVolume()"
+    file = open('/plant/settings/alert_volume.txt', 'r')
+    line = file.readlines()[0]
+    file.close()
+    if not isInteger(line):
+        raise Exception('Alert volume is not a number! Fix the settings/alert_volume.txt file!')
     return int(line)
 
 # get the most recent valid entry from the water_content log file and store it into the waterContent global array
@@ -112,36 +154,55 @@ def insertPlantData(data):
         print e
         conn.rollback()
         return False
+        
+# reads from alert_subscribers.txt all subscribers and returns them as a list
+def getAlertSubscribers():
+    if LOGGING:
+        print "Entering getAlertSubscribers()"
+    with open('/plant/settings/alert_subscribers.txt') as file:
+        return [line.rstrip('\n') for line in file]
 
 # notify by email when water level is low
 def emailAlert():
-    # me == the sender's email address
-    # you == the recipient's email address
-    sender = 'iastateplantalerts@gmail.com'
-    receivers = ['clucas@iastate.edu','jamoyer@iastate.edu']
-    msg = MIMEMultipart()
-    msg['From'] = sender
-    msg['To'] = ','.join(receivers)
-    msg['Subject'] = 'Low Water Alert'
+    if not alertSent:
+        sender = 'iastateplantalerts@gmail.com'
+        receivers = getAlertSubscribers()
+        msg = MIMEMultipart()
+        msg['From'] = sender
+        msg['To'] = ', '.join(receivers)
+        msg['Subject'] = 'Low Water Alert'
 
-    msg.attach(MIMEText('Too low of water you noob!'))
+        msg.attach(MIMEText('Your water level is currently at: ' + str(getCurrentVolume()) + ' mL.'))
 
-    # Send the message via our own SMTP server, but don't include the
-    # envelope header.
-    try:
-        s = smtplib.SMTP('smtp.gmail.com', 587)
-        s.ehlo()
-        s.starttls()
-        s.ehlo()
-        s.login(sender, 'plantpwpw')
-        s.sendmail(sender, ','.join(receivers), msg.as_string())
-        s.quit()
-        print 'sent email'
-    except smtplib.SMTPException, e:
-        print e
+        try:
+            s = smtplib.SMTP('smtp.gmail.com', 587)
+            s.ehlo()
+            s.starttls()
+            s.ehlo()
+            s.login(sender, 'plantpwpw')
+            s.sendmail(sender, receivers, msg.as_string())
+            s.quit()
+            print 'sent email'
+        except smtplib.SMTPException, e:
+            print e
+        
+# Checks the difference in water value and sends an alert if necassary
+def checkWaterVolume(volumeChange):
+    print 'current volume is ' + str(getCurrentVolume())
+    currentVolume = getCurrentVolume()-volumeChange
+    setCurrentVolume(currentVolume)
+    print 'current volume is ' + str(getCurrentVolume())
+    if currentVolume < getAlertVolume():
+        emailAlert()
+        alertSent = True
+    else:
+        alertSent = False
+    
+        
 
 # initialize number of plants
 numPlants = getNumPlants()
+emailAlert()
 
 # main loop
 while 1:
@@ -154,6 +215,7 @@ while 1:
             data[key_val[0]] = key_val[1]
     print input_line
     if insertPlantData(data):
+        checkWaterVolume(int(data['watered']))
         # message the arduino to change thresholds
         if data["plant_id"] == str(numPlants - 1):
             # read if there are any changes to the water contents
@@ -167,7 +229,6 @@ while 1:
                     readLine = ser.readline().upper().strip()
                     print readLine
                     if readLine == 'ACK':
-                        emailAlert()
                         break
                     if readLine == 'LEAVING HANDLESERIALMSG()':
                         ser.write(packet)
