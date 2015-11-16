@@ -13,7 +13,7 @@
     {
         die("Error: Unable to create /plant/settings/ directory.");
     }
-
+	
     // set the numPlants.txt file if the post variable is set
     $numPlantsFile = $settingsRoot . 'num_plants.txt';
     $numPlants = $_POST['numPlants'];
@@ -38,6 +38,95 @@
         $numPlants = intval($numPlants);
     }
 
+    $alertSubscribersFile = $settingsRoot . 'alert_subscribers.txt';
+    $alertSubscribers = $_POST['alertSubscribers'];
+    if (isset($alertSubscribers))
+    {
+        if(!file_put_contents($alertSubscribersFile, ''.$alertSubscribers))
+        {
+            addMsg('FAILED TO WRITE ' . $alertSubscribers . ' TO ' . $alertSubscribersFile);
+        }
+        else
+        {
+            addMsg('Set subscribers to ' . $alertSubscribers);
+        }
+    }
+    // the variable was not set, we need to read the alert_subscribers.txt file to get subscribers
+    else
+    {
+        addMsg("No value set for subscribers, not writing to subscribers.");
+        $alertSubscribers = file_get_contents($alertSubscribersFile);
+        if (!$alertSubscribers)
+        {
+            addMsg('Error with reading alertSubscribers file');
+        }
+		else
+		{
+			addMsg('Read alertSubscribers from file.');
+		}
+        
+    }
+    // counts the lines in $alertSubscribers
+    $numSubscribers = count(explode("\n",$alertSubscribers));
+    
+    // sets max volume
+    $maxVolumeFile = $settingsRoot . 'max_volume.txt';
+    $maxVolume = $_POST['maxVolume'];
+    if (isset($maxVolume) && !empty($maxVolume))
+    {
+        if(!file_put_contents($maxVolumeFile, ''.$maxVolume))
+        {
+            addMsg('FAILED TO WRITE ' . $maxVolume . ' TO ' . $maxVolumeFile);
+        }
+        else
+        {
+            addMsg('Set maxVolume to ' . $maxVolume);
+        }
+    }
+    // the variable was not set, we need to read the max_volume.txt file
+    else
+    {
+        addMsg("No value set for maxVolume, not writing to maxVolume.");
+        $maxVolume = file_get_contents($maxVolumeFile);
+        addMsg('Read maxVolume from file.');
+    }
+	
+	//sets current volume to max volume
+	$currentVolumeFile = $settingsRoot . 'current_volume.txt';
+	if($_POST['resetCurrentVolume'])
+	{
+		if(!file_put_contents($currentVolumeFile, ''.$maxVolume))
+        {
+            addMsg('FAILED TO WRITE ' . $maxVolume . ' TO ' . $currentVolumeFile);
+        }
+        else
+        {
+            addMsg('Set current volume to to ' . $maxVolume);
+        }
+	}
+        
+    // sets alertVolume
+    $alertVolumeFile = $settingsRoot . 'alert_volume.txt';
+    $alertVolume = $_POST['alertVolume'];
+    if (isset($alertVolume) && !empty($alertVolume))
+    {
+        if(!file_put_contents($alertVolumeFile, ''.$alertVolume))
+        {
+            addMsg('FAILED TO WRITE ' . $alertVolume . ' TO ' . $alertVolumeFile);
+        }
+        else
+        {
+            addMsg('Set alertVolume to ' . $alertVolume);
+        }
+    }
+    // the variable was not set, we need to read the max_volume.txt file
+    else
+    {
+        addMsg("No value set for alertVolume, not writing to alertVolume.");
+        $alertVolume = file_get_contents($alertVolumeFile);
+        addMsg('Read alertVolume from file.');
+    }
+    
     $waterContentFile = $settingsRoot . 'water_content.txt';
     if (is_int($numPlants))
     {
@@ -153,8 +242,9 @@
         <title>Change Settings</title>
     </head>
     <body>
-        <h1>Change Plant Settings</h1>
+        <h1>Change Settings</h1>
         <a href="index.php">Home</a></br></br>
+        <h2>Plant Settings</h2>
         <form action='changeSettings.php' method='post'>
             <label>Number of Plants: </label>
             <input type='text' name='numPlants' value="<?php echo $numPlants;?>"/></br>
@@ -169,6 +259,18 @@
             }
             ?>
 
+            <h2>Email Alert Subscribers</h2>
+            <textarea rows="<?php echo $numSubscribers;?>" cols="50" name="alertSubscribers"><?php echo $alertSubscribers;?></textarea>
+			</br></br>
+            
+            <label>Fill-line volume (mL): </label>
+            <input type='text' name='maxVolume' value="<?php echo $maxVolume;?>"/></br></br>
+            
+            <label>Alert at water volume (mL): </label>
+            <input type='text' name='alertVolume' value="<?php echo $alertVolume;?>"/></br></br>
+         
+			<label>Reset current volume to fill line </label>
+			<input type='checkbox' name='resetCurrentVolume'/></br></br>
             <input type='submit'/>
         </form>
         <div id="messageDiv"><?php echo $message;?></div>
