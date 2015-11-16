@@ -3,6 +3,8 @@ import serial
 import MySQLdb
 import smtplib
 from email.mime.text import MIMEText
+from email.MIMEBase import MIMEBase
+from email.MIMEMultipart import MIMEMultipart
 conn = MySQLdb.connect(host= "localhost",
                   user="plants",
                   passwd="8SEh2R7LsFQAJnuM",
@@ -48,6 +50,8 @@ def getNumPlants():
 
 # get the most recent valid entry from the water_content log file and store it into the waterContent global array
 def readWaterContent():
+	print 'Entering readWaterContent'
+	emailAlert()
 	log = open('settings/water_content.txt', 'r')
 	lines = log.readlines()
 	log.close()
@@ -60,6 +64,11 @@ def readWaterContent():
 	global previousWaterContent
 	previousWaterContent = waterContent
 	waterContent = line
+	print ''
+	print ''
+	print 'Water content'
+	print ''.join(str(e) for e in waterContent)
+	print 'Leaving readWaterContent'
 
 # checks if every element of the line is an integer, if so it is a valid entry
 def isValidWaterContentEntry(line):
@@ -92,25 +101,30 @@ def insertPlantData(data):
 		
 # notify by email when water level is low
 def emailAlert():
-	# Open a plain text file for reading.  For this example, assume that
-	# the text file contains only ASCII characters.
-	fp = open('settings/water_content.txt', 'r')
-	# Create a text/plain message
-	msg = MIMEText(fp.read())
-	fp.close()
-
 	# me == the sender's email address
 	# you == the recipient's email address
-	msg['Subject'] = 'The contents of water_content.txt'
-	msg['From'] = 'jamoyer@iastate.edu'
-	msg['To'] = 'clucas@iastate.edu'
+	sender = 'iastateplantalerts@gmail.com'
+	receivers = ['clucas@iastate.edu','jamoyer@iastate.edu']
+	msg = MIMEMultipart()
+	msg['From'] = sender
+	msg['To'] = ','.join(receivers)
+	msg['Subject'] = 'Low Water Alert'
 
+	msg.attach(MIMEText('Too low of water you noob!'))
+	
 	# Send the message via our own SMTP server, but don't include the
 	# envelope header.
-	s = smtplib.SMTP()
-	s.sendmail(me, [you], msg.as_string())
-	s.quit()
-
+	try:
+		s = smtplib.SMTP('smtp.gmail.com', 587)
+		s.ehlo()
+		s.starttls()
+		s.ehlo()
+		s.login(sender, 'plantpwpw')
+		s.sendmail(sender, ','.join(receivers), msg.as_string())
+		s.quit()
+		print 'sent email'
+	except smtplib.SMTPException, e:
+		print e
 
 # initialize number of plants
 numPlants = getNumPlants()
@@ -137,7 +151,6 @@ while 1:
 					readLine = ser.readline().upper().strip()
 					print readLine
 					if readLine == 'ACK':
-						emailAlert()
 						break
 
 			# now that the packets have been sent, update the previous water content 
