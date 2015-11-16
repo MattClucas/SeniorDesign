@@ -19,7 +19,7 @@ WATERING_SECONDS = 3
 # declare globals
 waterContent = []
 previousWaterContent = []
-alertSent = False
+alertSent = getCurrentVolume() < getAlertVolume()
 
 # generates change packets to send to the arduino
 def getPackets():
@@ -57,7 +57,7 @@ def getNumPlants():
     if not isInteger(line):
         raise Exception('Number of Plants is not a number! Fix the settings/num_plants.txt file!')
     return int(line)
-    
+
 # reads the max_volume.txt file
 def getMaxVolume():
     if LOGGING:
@@ -68,7 +68,7 @@ def getMaxVolume():
     if not isInteger(line):
         raise Exception('Max volume is not a number! Fix the settings/max_volume.txt file!')
     return int(line)
-    
+
 # reads the current_volume.txt file
 def getCurrentVolume():
     if LOGGING:
@@ -79,7 +79,7 @@ def getCurrentVolume():
     if not isInteger(line):
         raise Exception('Current volume is not a number! Fix the settings/current_volume.txt file!')
     return int(line)
-    
+
 # set the current_volume.txt file
 def setCurrentVolume(value):
     if LOGGING:
@@ -87,7 +87,7 @@ def setCurrentVolume(value):
     file = open('/plant/settings/current_volume.txt', 'w')
     file.write(str(value))
     file.close()
-    
+
 # reads the alert_volume.txt file and sets the global numPlants variable
 def getAlertVolume():
     if LOGGING:
@@ -154,7 +154,7 @@ def insertPlantData(data):
         print e
         conn.rollback()
         return False
-        
+
 # reads from alert_subscribers.txt all subscribers and returns them as a list
 def getAlertSubscribers():
     if LOGGING:
@@ -164,6 +164,7 @@ def getAlertSubscribers():
 
 # notify by email when water level is low
 def emailAlert():
+    global alertSent
     if not alertSent:
         sender = 'iastateplantalerts@gmail.com'
         receivers = getAlertSubscribers()
@@ -185,7 +186,7 @@ def emailAlert():
             print 'sent email'
         except smtplib.SMTPException, e:
             print e
-        
+
 # Checks the difference in water value and sends an alert if necassary
 def checkWaterVolume(volumeChange):
     print 'current volume is ' + str(getCurrentVolume())
@@ -194,10 +195,7 @@ def checkWaterVolume(volumeChange):
     print 'current volume is ' + str(getCurrentVolume())
     if currentVolume < getAlertVolume():
         emailAlert()
-        alertSent = True
-    else:
-        alertSent = False
-    
+
 # initialize number of plants
 numPlants = getNumPlants()
 

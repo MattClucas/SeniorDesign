@@ -1,6 +1,8 @@
 #!/bin/bash
-while :
-do
+
+# NEVER DIE
+set +e
+while [ "1" -eq "1" ]; do
 	sudo python -u /plant/SeniorDesign/python/serial_read.py >>/plant/logs/serialreadout.txt 2>>/plant/logs/serialreaderror.txt
 	sleep 1
 done
