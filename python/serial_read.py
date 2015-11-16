@@ -198,11 +198,8 @@ def checkWaterVolume(volumeChange):
     else:
         alertSent = False
     
-        
-
 # initialize number of plants
 numPlants = getNumPlants()
-emailAlert()
 
 # main loop
 while 1:
