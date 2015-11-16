@@ -1,7 +1,39 @@
 <?php
 	require_once("sqlConnection.php");
-?>
 
+    $NUM_LABELS = 20;
+
+    // query the database for all totalled/averaged sensor data from every plant
+    $result = $db->query("SELECT PLANT_ID, " .
+                                "SUM(WATER_USED_MILLILITERS) AS water, " .
+                                "AVG(MOISTURE_PERCENTAGE) AS moisture, " .
+                                "AVG(LEAF_THICKNESS) AS thickness " .
+                         "FROM PlantMonitor_Data " .
+                         "GROUP BY PLANT_ID");
+
+    // put every column into an array
+    $plantIds = [];
+    $waters = [];
+    $moisture = [];
+    $thickness = [];
+    foreach($result as $key => $val)
+    {
+        $plantIds[] = $val['PLANT_ID'];
+        $waters[] = $val['water'];
+        $moisture[] = $val['moisture'];
+        $thickness[] = $val['thickness'];
+    }
+
+    // use plant ids as keys with sensor data as values
+    $waterUsage = array_combine($plantIds, $waters);
+    $moistureAverage = array_combine($plantIds, $moisture);
+    $thicknessAverage = array_combine($plantIds, $thickness);
+
+    // sort each array to properly order the graph
+    asort($waterUsage);
+    asort($moistureAverage);
+    asort($thicknessAverage);
+?>
 <!doctype html>
 <html>
     <head>
@@ -12,7 +44,14 @@
         <link rel="stylesheet" type="text/css" href="css/bootstrap.min.css">
         <link rel="stylesheet" type="text/css" href="css/style.css">
         <link rel="stylesheet" type="text/css" href="css/bootstrap-theme.min.css">
-        
+        <style>
+            .content
+            {
+                width: 90%;
+                margin-left: 5%;
+            }
+        </style>
+
         <!-- Javascript includes -->
         <script type="text/javascript" src="js/Chart.Core.js"></script>
         <script type="text/javascript" src="js/Chart.Bar.js"></script>
@@ -22,12 +61,69 @@
         <script type="text/javascript" src="js/jquery-2.1.3.min.js"></script>
         <script type="text/javascript" src="js/bootstrap.min.js"></script>
         <script type="text/javascript" src="js/jquery.metadata.js"></script>
-        <style>
-            .content {
-                width: 75%;
-                margin-left: 12.5%;
-            }
-        </style>
+
+        <script>
+            var moistureDataSet =
+            {
+                labels :
+                <?php echo json_encode(array_keys($moistureAverage));?>,
+                datasets :
+                [
+                    {
+                        fillColor : "rgba(63,127,191,1)",
+                        strokeColor : "rgba(220,220,220,0.8)",
+                        highlightFill: "rgba(95,179,86,1)",
+                        highlightStroke: "rgba(220,220,220,1)",
+                        data : <?php echo json_encode(array_values($moistureAverage));?>
+                    }
+                ]
+            };
+            var thicknessDataSet =
+            {
+                labels :
+                <?php echo json_encode(array_keys($thicknessAverage));?>,
+                datasets :
+                [
+                    {
+                        fillColor : "rgba(244,182,34,1)",
+                        strokeColor : "rgba(220,220,220,0.8)",
+                        highlightFill: "rgba(95,179,86,1)",
+                        highlightStroke: "rgba(220,220,220,1)",
+                        data : <?php echo json_encode(array_values($thicknessAverage));?>
+                    }
+                ]
+            };
+            var waterUsageDataSet =
+            {
+                labels :
+                <?php echo json_encode(array_keys($waterUsage));?>,
+                datasets :
+                [
+                    {
+                        fillColor : "rgba(63,127,191,1)",
+                        strokeColor : "rgba(220,220,220,0.8)",
+                        highlightFill: "rgba(95,179,86,1)",
+                        highlightStroke: "rgba(220,220,220,1)",
+                        data : <?php echo json_encode(array_values($waterUsage));?>
+                    }
+                ]
+            };
+            window.onload = function(){
+                var canvasbar = document.getElementById("moistureCanvas").getContext("2d");
+                window.myBar = new Chart(canvasbar).Bar(moistureDataSet, {
+                    responsive : true
+                });
+                var canvasbar = document.getElementById("thicknessCanvas").getContext("2d");
+                window.myBar = new Chart(canvasbar).Bar(thicknessDataSet, {
+                    responsive : true
+                });
+                var canvasbar = document.getElementById("waterUsageCanvas").getContext("2d");
+                window.myBar = new Chart(canvasbar).Bar(waterUsageDataSet, {
+                    responsive : true
+                });
+                $("#LatestUpdatesTable").tablesorter();
+            };
+        </script>
     </head>
     <body>
         <div class="content">
@@ -38,108 +134,18 @@
             </div>
         </div>
         <div id="HTMLBlock" class="content">
-            <?php 
-                $NUM_LABELS = 20;
-
-                // query the database for all totalled/averaged sensor data from every plant
-                $result = $db->query("SELECT PLANT_ID, " .
-                                            "SUM(WATER_USED_MILLILITERS) AS water, " .
-                                            "AVG(MOISTURE_PERCENTAGE) AS moisture, " .
-                                            "AVG(LEAF_THICKNESS) AS thickness " .
-                                     "FROM PlantMonitor_Data " .
-                                     "GROUP BY PLANT_ID");
-
-                // put every column into an array
-                $plantIds = [];
-                $waters = [];
-                $moisture = [];
-                $thickness = [];
-                foreach($result as $key => $val)
-                {
-                    $plantIds[] = $val['PLANT_ID'];
-                    $waters[] = $val['water'];
-                    $moisture[] = $val['moisture'];
-                    $thickness[] = $val['thickness'];
-                }
-
-                // use plant ids as keys with sensor data as values
-                $waterUsage = array_combine($plantIds, $waters);
-                $moistureAverage = array_combine($plantIds, $moisture);
-                $thicknessAverage = array_combine($plantIds, $thickness);
-
-                // sort each array to properly order the graph
-                asort($waterUsage);
-                asort($moistureAverage);
-                asort($thicknessAverage);
-            ?>
-            <script>
-                var moistureDataSet = 
-                {
-                    labels : 
-                    <?php echo json_encode(array_keys($moistureAverage));?>,
-                    datasets : 
-                    [
-                        {
-                            fillColor : "rgba(63,127,191,1)",
-                            strokeColor : "rgba(220,220,220,0.8)",
-                            highlightFill: "rgba(95,179,86,1)",
-                            highlightStroke: "rgba(220,220,220,1)",
-                            data : <?php echo json_encode(array_values($moistureAverage));?>
-                        }
-                    ]
-                };
-                var thicknessDataSet = 
-                {
-                    labels : 
-                    <?php echo json_encode(array_keys($thicknessAverage));?>,
-                    datasets : 
-                    [
-                        {
-                            fillColor : "rgba(244,182,34,1)",
-                            strokeColor : "rgba(220,220,220,0.8)",
-                            highlightFill: "rgba(95,179,86,1)",
-                            highlightStroke: "rgba(220,220,220,1)",
-                            data : <?php echo json_encode(array_values($thicknessAverage));?>
-                        }
-                    ]
-                };
-                var waterUsageDataSet = 
-                {
-                    labels : 
-                    <?php echo json_encode(array_keys($waterUsage));?>,
-                    datasets : 
-                    [
-                        {
-                            fillColor : "rgba(63,127,191,1)",
-                            strokeColor : "rgba(220,220,220,0.8)",
-                            highlightFill: "rgba(95,179,86,1)",
-                            highlightStroke: "rgba(220,220,220,1)",
-                            data : <?php echo json_encode(array_values($waterUsage));?>
-                        }
-                    ]
-                };
-                window.onload = function(){
-                    var canvasbar = document.getElementById("moistureCanvas").getContext("2d");
-                    window.myBar = new Chart(canvasbar).Bar(moistureDataSet, {
-                        responsive : true
-                    });
-                    var canvasbar = document.getElementById("thicknessCanvas").getContext("2d");
-                    window.myBar = new Chart(canvasbar).Bar(thicknessDataSet, {
-                        responsive : true
-                    });
-                    var canvasbar = document.getElementById("waterUsageCanvas").getContext("2d");
-                    window.myBar = new Chart(canvasbar).Bar(waterUsageDataSet, {
-                        responsive : true
-                    });
-                    $("#LatestUpdatesTable").tablesorter(); 
-                };
-            </script>
-            <h2>Moisture Content</h2>
-            <canvas id="moistureCanvas"></canvas>
-            <h2>Thickness Millimeters</h2>
-            <canvas id="thicknessCanvas"></canvas>
-            <h2>Water Used (mL)</h2>
-            <canvas id="waterUsageCanvas"></canvas>
+            <div class="plantchart">
+                <h2>Moisture Content</h2>
+                <canvas id="moistureCanvas"></canvas>
+            </div>
+            <div class="plantchart">
+                <h2>Thickness Millimeters</h2>
+                <canvas id="thicknessCanvas"></canvas>
+            </div>
+            <div class="plantchart">
+                <h2>Water Used (mL)</h2>
+                <canvas id="waterUsageCanvas"></canvas>
+            </div>
             <div class="container">
                 <h2>Latest Readings</h2>
                 <table id="LatestUpdatesTable" class="table table-hover tablesorter">
@@ -151,7 +157,7 @@
                             <th>Water Added</th>
                             <th>Time</th>
                         </tr>
-                    </thead>   
+                    </thead>
                     <tbody>
                     <?php
                         // select the latest readings from each plant
@@ -167,7 +173,7 @@
                                                     "GROUP BY PLANT_ID " .
                                              ") " .
                                              "GROUP BY PLANT_ID");
-                        
+
                         // display each reading as a row in the table
                         foreach($result as $key => $val)
                         {
@@ -181,7 +187,7 @@
                             <td><?php echo  $val['WATER_USED_MILLILITERS'] ?></td>
                             <td><?php echo  date("F j, Y, g:i a", strtotime($val['TIME'])) ?></td>
                         </tr>
-                    <?php 
+                    <?php
                     }
                     ?>
                     </tbody>
