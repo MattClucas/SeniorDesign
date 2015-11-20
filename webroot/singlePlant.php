@@ -53,7 +53,7 @@
                     $moistureData = [];
                     $thicknessData = [];
                     $waterUsageData = [];
-                    if (isset($_GET['id']) && $_GET['id'] > 0)
+                    if (isset($_GET['id']) && $_GET['id'] >= 0)
                     {
                         $id = $db->real_escape_string($_GET['id']);
                         $result = $db->query("SELECT * FROM `PlantMonitor_Data` WHERE `PLANT_ID` = '" . $id . "' ORDER BY TIME");
