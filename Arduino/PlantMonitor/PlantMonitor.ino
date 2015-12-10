@@ -7,7 +7,7 @@ int PLANT_WATER_THRESHOLDS[] = {1023, 1023, 1023, 1023,
                                 1023, 1023, 1023, 1023,
                                 1023, 1023, 1023, 1023
                                 };
-int NUM_PLANTS = 4;
+int NUM_PLANTS = 16;
 
 int PLANT_SELECT_PINS[] = {2, 3, 4, 5};
 int ENABLE_PUMPS = 8;
@@ -116,7 +116,7 @@ void handleSerialMsg()
               ack = setWaterContent(input);
               break;
             case 'N':
-              //ack = setNumberPlants(input);
+              ack = setNumberPlants(input);
               break;
             default:
               break;
@@ -188,5 +188,11 @@ String setWaterContent(String packet)
       Serial.println(PLANT_WATER_THRESHOLDS[i]);
     }
     
+    return "ACK";
+}
+
+String setNumberPlants(String packet)
+{
+    NUM_PLANTS = packet.substring(2).toInt();
     return "ACK";
 }
