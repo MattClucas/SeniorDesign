@@ -60,6 +60,7 @@ void loop() {
     if(turnOnPump)
     {
         // turn on pumps
+        // enable is switched, low=on, high=off
         digitalWrite(ENABLE_PUMPS, LOW);
         delay(WATERING_TIME_MILLISECONDS); 
         digitalWrite(ENABLE_PUMPS, HIGH);
