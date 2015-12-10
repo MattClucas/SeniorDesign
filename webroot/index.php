@@ -157,6 +157,7 @@
             </div>
             <div class="container">
                 <h2>Latest Readings</h2>
+                <h6>Click on a plant id below to see individual statistics</h6>
                 <table id="LatestUpdatesTable" class="table table-hover tablesorter">
                     <thead>
                         <tr>
@@ -174,30 +175,25 @@
                                                     "MOISTURE_PERCENTAGE, " .
                                                     "LEAF_THICKNESS, " .
                                                     "WATER_USED_MILLILITERS, " .
-                                                    "TIME " .
+                                                    "MAX(TIME) " .
                                              "FROM PlantMonitor_Data " .
-                                             "WHERE TIME IN ( " .
-                                                    "SELECT MAX(TIME) " .
-                                                    "FROM PlantMonitor_Data " .
-                                                    "GROUP BY PLANT_ID " .
-                                             ") " .
                                              "GROUP BY PLANT_ID");
 
                         // display each reading as a row in the table
-                        /*foreach($result as $key => $val)
-                        {*/
+                        foreach($result as $key => $val)
+                        {
                     ?>
                         <tr>
                             <td>
-                                <a href="/singlePlant.php?id=<?php //echo $val['PLANT_ID']; ?>"><?php //echo $val['PLANT_ID']; ?></a>
+                                <a href="/singlePlant.php?id=<?php echo $val['PLANT_ID']; ?>"><?php echo $val['PLANT_ID']; ?></a>
                             </td>
-                            <td><?php //echo  $val['MOISTURE_PERCENTAGE']; ?></td>
-                            <td><?php //echo  $val['LEAF_THICKNESS']; ?></td>
-                            <td><?php //echo  $val['WATER_USED_MILLILITERS']; ?></td>
-                            <td><?php //echo  date("F j, Y, g:i a", strtotime($val['TIME'])); ?></td>
+                            <td><?php echo  $val['MOISTURE_PERCENTAGE']; ?></td>
+                            <td><?php echo  $val['LEAF_THICKNESS']; ?></td>
+                            <td><?php echo  $val['WATER_USED_MILLILITERS']; ?></td>
+                            <td><?php echo  date("F j, Y, g:i a", strtotime($val['TIME'])); ?></td>
                         </tr>
                     <?php
-                    //}
+                    }
                     ?>
                     </tbody>
                 </table>
