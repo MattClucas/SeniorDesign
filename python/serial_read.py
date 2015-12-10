@@ -218,18 +218,18 @@ def checkWaterVolume(volumeChange):
         print 'alert sent to true after sending email'
 
 # Updates number of plants on Pi and Arduino if the value stored in /plant/settings/num_plants.txt is different than numPlants
-def updateNumberPlants
+def updateNumberPlants():
     if LOGGING:
         print "Entering updateNumberPlants"
     numPlantsNew = getNumPlants()
-    if numPlants != numPlantsNew
+    if numPlants != numPlantsNew:
         numPlants = numPlantsNew
         #First byte is not 'M' since this is only packet, Second is an 'N' for number of plants changed
         packet = '0N' + str(getNumPlants())
         sendPacket(packet)
 
 # Sends packet to Arduino, if no 'ACK' is recieved resends
-def sendPacket(packet)
+def sendPacket(packet):
     if LOGGING:
         print "Entering getAlertSubscribers()"
         print packet
@@ -265,7 +265,7 @@ while 1:
         # message the arduino to change thresholds
         if data["plant_id"] == str(numPlants - 1):
             # read if there are any changes to the water contents
-            readWaterContent();
+            readWaterContent()
             # send any changes to the arduino in the form of message packets
             for packet in getPackets():
                 sendPacket(packet)
