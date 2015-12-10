@@ -252,6 +252,7 @@ fillLine = getMaxVolume()
 
 # main loop
 while 1:
+    updateNumberPlants()
     data = {}
     input_line = ser.readline()
     inputs = input_line.split(";")
