@@ -11,7 +11,7 @@
         <link rel="stylesheet" type="text/css" href="css/bootstrap.min.css">
         <link rel="stylesheet" type="text/css" href="css/style.css">
         <link rel="stylesheet" type="text/css" href="css/bootstrap-theme.min.css">
-        
+
         <!-- Javascript includes -->
         <script type="text/javascript" src="js/Chart.Core.js"></script>
         <script type="text/javascript" src="js/Chart.Bar.js"></script>
@@ -22,9 +22,19 @@
         <script type="text/javascript" src="js/bootstrap.min.js"></script>
         <script type="text/javascript" src="js/jquery.metadata.js"></script>
         <style>
-            .content {
-                width: 75%;
-                margin-left: 12.5%;
+            .content
+            {
+                width: 90%;
+                margin-left: 5%;
+            }
+            .plantchart
+            {
+                float:left;
+                padding-left: 10px;
+            }
+            .container
+            {
+                display: inline-block;
             }
         </style>
     </head>
@@ -111,11 +121,11 @@
                             }
                         ]
                     };
-                    var waterUsageDataSet = 
+                    var waterUsageDataSet =
                     {
-                        labels : 
+                        labels :
                         <?php echo json_encode($labels);?>,
-                        datasets : 
+                        datasets :
                         [
                             {
                                 fillColor : "rgba(63,127,191,1)",
@@ -143,15 +153,20 @@
                         window.myBar = new Chart(canvasbar).Line(waterUsageDataSet, {
                             responsive : true
                         });
-                        $("#LatestUpdatesTable").tablesorter(); 
                     }
                 </script>
-                <h2>Moisture Content</h2>
-                <canvas id="moistureCanvas"></canvas>
-                <h2>Thickness Millimeters</h2>
-                <canvas id="thicknessCanvas"></canvas>
-                <h2>Water Used (mL)</h2>
-                <canvas id="waterUsageCanvas"></canvas>
+                <div class="plantchart">
+                    <h2>Moisture Content</h2>
+                    <canvas id="moistureCanvas"></canvas>
+                </div>
+                <div class="plantchart">
+                    <h2>Thickness Millimeters</h2>
+                    <canvas id="thicknessCanvas"></canvas>
+                </div>
+                <div class="plantchart">
+                    <h2>Water Used (mL)</h2>
+                    <canvas id="waterUsageCanvas"></canvas>
+                </div>
                 <div id="copyright">
                     <div class="repository">
                         <div class="left">

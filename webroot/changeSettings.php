@@ -13,7 +13,7 @@
     {
         die("Error: Unable to create /plant/settings/ directory.");
     }
-	
+
     // set the numPlants.txt file if the post variable is set
     $numPlantsFile = $settingsRoot . 'num_plants.txt';
     $numPlants = $_POST['numPlants'];
@@ -64,11 +64,11 @@
 		{
 			addMsg('Read alertSubscribers from file.');
 		}
-        
+
     }
     // counts the lines in $alertSubscribers
     $numSubscribers = count(explode("\n",$alertSubscribers));
-    
+
     // sets max volume
     $maxVolumeFile = $settingsRoot . 'max_volume.txt';
     $maxVolume = $_POST['maxVolume'];
@@ -90,7 +90,7 @@
         $maxVolume = file_get_contents($maxVolumeFile);
         addMsg('Read maxVolume from file.');
     }
-	
+
 	//sets current volume to max volume
 	$currentVolumeFile = $settingsRoot . 'current_volume.txt';
 	if($_POST['resetCurrentVolume'])
@@ -104,7 +104,7 @@
             addMsg('Set current volume to to ' . $maxVolume);
         }
 	}
-        
+
     // sets alertVolume
     $alertVolumeFile = $settingsRoot . 'alert_volume.txt';
     $alertVolume = $_POST['alertVolume'];
@@ -126,7 +126,8 @@
         $alertVolume = file_get_contents($alertVolumeFile);
         addMsg('Read alertVolume from file.');
     }
-    
+
+    // sets water content thresholds
     $waterContentFile = $settingsRoot . 'water_content.txt';
     if (is_int($numPlants))
     {
@@ -137,11 +138,11 @@
             // get the water content for this plant
             $content = $_POST['waterContent' . $i];
             // cast to an int
-            $content = intval($content);
+            $content = floatval($content);
 
             // if this plants water content is not set or is not a number
             // there is an error, do not write to file
-            if (!isset($content) || empty($content) || !is_int($content))
+            if (!isset($content) || empty($content) || !is_float($content))
             {
                 $waterContentStr = null;
                 addMsg("Water Content not set or not a number for plant ".$i.". Not writing water content at all.");
@@ -206,8 +207,8 @@
                 for ($j = 0; $j < $numPlants; $j++)
                 {
                     // if the entry is not a number it is invalid
-                    $waterContent[$j] = intval($waterContent[$j]);
-                    if (!is_int($waterContent[$j]))
+                    $waterContent[$j] = floatval($waterContent[$j]);
+                    if (!is_float($waterContent[$j]))
                     {
                         $allEntriesAreNumber = false;
                         break;
@@ -262,13 +263,13 @@
             <h2>Email Alert Subscribers</h2>
             <textarea rows="<?php echo $numSubscribers;?>" cols="50" name="alertSubscribers"><?php echo $alertSubscribers;?></textarea>
 			</br></br>
-            
+
             <label>Fill-line volume (mL): </label>
             <input type='text' name='maxVolume' value="<?php echo $maxVolume;?>"/></br></br>
-            
+
             <label>Alert at water volume (mL): </label>
             <input type='text' name='alertVolume' value="<?php echo $alertVolume;?>"/></br></br>
-         
+
 			<label>Reset current volume to fill line </label>
 			<input type='checkbox' name='resetCurrentVolume'/></br></br>
             <input type='submit'/>
