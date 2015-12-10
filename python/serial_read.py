@@ -20,18 +20,48 @@ WATERING_SECONDS = 3
 waterContent = []
 previousWaterContent = []
 
+STUMPY_SET_NUM_PLANTS = 'N'
+STUMPY_SET_WATER_CONTENT = 'W'
+STUMPY_SET_WATERING_TIME = 'T'
+STUMPY_SET_DELAY_TIME = 'S'
+
 # generates change packets to send to the arduino
 def getPackets():
     if LOGGING:
         print "Entering getPackets()"
     packets = []
+    
+    #gets number of plants packet
+    global numPlants
+    numPlantsNew = getNumPlants()
+    if numPlants != numPlantsNew:
+        numPlants = numPlantsNew
+        packets.append('M' + STUMPY_SET_NUM_PLANTS + str(numPlants))
+        
+    #gets changed water content packets
     for i in range(numPlants):
         if isDiffWaterContent(i):
-            packets.append('MW' + str(i) + ',' + str(waterContent[i]))
+            packets.append('M' + STUMPY_SET_WATER_CONTENT + str(i) + ',' + str(waterContent[i]))
+            
+    #gets watering time packet
+    global wateringTimeMs
+    wateringTimeNew = getWateringTime()
+    if wateringTimeMs != wateringTimeNew:
+        wateringTimeMs = wateringTimeNew
+        packets.append('M' + STUMPY_SET_WATERING_TIME + str(wateringTimeNew))
+    
+    #gets delay time packet
+    global sleepTimeSeconds
+    sleepTimeNew = getSleepTime()
+    if sleepTimeSeconds != sleepTimeNew:
+        sleepTimeSeconds = sleepTimeNew
+        packets.append('M' + STUMPY_SET_DELAY_TIME + str(wateringTimeNew))
+    
+
     # the last packet needs to have a header without the first 'M' so replace the first
-    # letter with a 'N'
+    # letter with a '0'
     if len(packets) > 0:
-        packets[-1] = 'N' + packets[-1][1:]
+        packets[-1] = '0' + packets[-1][1:]
     if LOGGING:
         print "packets are " + ';'.join(packets)
         print "Leaving getPackets()"
@@ -78,7 +108,29 @@ def getCurrentVolume():
     if not isInteger(line):
         raise Exception('Current volume is not a number! Fix the settings/current_volume.txt file!')
     return int(line)
+    
+# reads the watering_time_milliseconds.txt file
+def getWateringTime():
+    if LOGGING:
+        print "Entering getWateringTime()"
+    file = open('/plant/settings/watering_time_milliseconds.txt', 'r')
+    line = file.readlines()[0]
+    file.close()
+    if not isInteger(line):
+        raise Exception('Watering time is not a number! Fix the settings/watering_time_milliseconds.txt file!')
+    return int(line)
 
+# reads the sleep_time_seconds.txt file
+def getSleepTime():
+    if LOGGING:
+        print "Entering getSleepTime()"
+    file = open('/plant/settings/sleep_time_seconds.txt', 'r')
+    line = file.readlines()[0]
+    file.close()
+    if not isInteger(line):
+        raise Exception('Sleep time is not a number! Fix the settings/sleep_time_seconds.txt file!')
+    return int(line)    
+    
 # set the current_volume.txt file
 def setCurrentVolume(value):
     if LOGGING:
@@ -217,17 +269,6 @@ def checkWaterVolume(volumeChange):
         alertSent = True
         print 'alert sent to true after sending email'
 
-# Updates number of plants on Pi and Arduino if the value stored in /plant/settings/num_plants.txt is different than numPlants
-def updateNumberPlants():
-    if LOGGING:
-        print "Entering updateNumberPlants"
-    numPlantsNew = getNumPlants()
-    if numPlants != numPlantsNew:
-        numPlants = numPlantsNew
-        #First byte is not 'M' since this is only packet, Second is an 'N' for number of plants changed
-        packet = '0N' + str(getNumPlants())
-        sendPacket(packet)
-
 # Sends packet to Arduino, if no 'ACK' is recieved resends
 def sendPacket(packet):
     if LOGGING:
@@ -242,8 +283,10 @@ def sendPacket(packet):
         if readLine == 'LEAVING HANDLESERIALMSG()':
             ser.write(packet)
 
-# initialize number of plants
-numPlants = getNumPlants()
+# initialize variables - will be updated by getPackets() with values from files in settings
+numPlants = 1
+wateringTimeMs = 0
+sleepTimeSeconds = 0
 
 # See if an email has alerted the user of a low water content
 alertSent = getCurrentVolume() < getAlertVolume()
@@ -252,7 +295,6 @@ fillLine = getMaxVolume()
 
 # main loop
 while 1:
-    updateNumberPlants()
     data = {}
     input_line = ser.readline()
     inputs = input_line.split(";")

@@ -1,5 +1,7 @@
-int TIME_BETWEEN_READINGS_SECONDS = 5;//10*60;// 10 mins* 60 seconds
-unsigned long WATERING_TIME_MILLISECONDS = 3 * 1000; // 30 seconds * 1000 ms ~ 27.5 mL
+String STUMPY_SET_NUM_PLANTS = 'N';
+String STUMPY_SET_WATER_CONTENT = 'W';
+String STUMPY_SET_WATERING_TIME = 'T';
+String STUMPY_SET_DELAY_TIME = 'S';
 
 // the water level which turns on the pump to water the plant
 float PLANT_WATER_THRESHOLDS[] = {
@@ -18,6 +20,8 @@ int THICKNESS_SENSOR_PIN = A0;
 int MOISTURE_SENSOR_PIN = A1;
 
 int currentPlant = 0;
+int time_between_readings_seconds = 0;// Set by STUMPY //10*60;// 10 mins* 60 seconds
+unsigned long watering_time_milliseconds = 0; // Set by STUMPY //30 seconds * 1000 ms ~ 27.5 mL
 
 void setup() {
   Serial.begin(9600);
@@ -62,7 +66,7 @@ void loop() {
         // turn on pumps
         // enable is switched, low=on, high=off
         digitalWrite(ENABLE_PUMPS, LOW);
-        delay(WATERING_TIME_MILLISECONDS);
+        delay(watering_time_milliseconds);
         digitalWrite(ENABLE_PUMPS, HIGH);
     }
 
@@ -72,7 +76,7 @@ void loop() {
         handleSerialMsg();
         currentPlant = 0;
         int i=0;
-        for(;i<TIME_BETWEEN_READINGS_SECONDS;i++)
+        for(;i<time_between_readings_seconds;i++)
         {
             delay(1000);
         }
@@ -124,11 +128,17 @@ void handleSerialMsg()
       {
           switch (input[1])
           {
-            case 'W':
+            case STUMPY_SET_WATER_CONTENT:
               ack = setWaterContent(input);
               break;
-            case 'N':
+            case STUMPY_SET_NUM_PLANTS:
               ack = setNumberPlants(input);
+              break;
+            case STUMPY_SET_DELAY_TIME:
+              ack = setDelayTime(input);
+              break;
+            case STUMPY_SET_WATERING_TIME:
+              ack = setWateringTime(input);
               break;
             default:
               break;
@@ -206,5 +216,17 @@ String setWaterContent(String packet)
 String setNumberPlants(String packet)
 {
     NUM_PLANTS = packet.substring(2).toInt();
+    return "ACK";
+}
+
+String setDelayTime(String packet)
+{
+    time_between_readings_seconds = packet.substring(2).toInt();
+    return "ACK";
+}
+
+String setWateringTime(String packet)
+{
+    watering_time_milliseconds = packet.substring(2).toInt();
     return "ACK";
 }

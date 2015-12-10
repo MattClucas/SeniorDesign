@@ -90,6 +90,50 @@
         $maxVolume = file_get_contents($maxVolumeFile);
         addMsg('Read maxVolume from file.');
     }
+    
+    // sets delayTime
+    $delayTimeFile = $settingsRoot . 'sleep_time_seconds.txt';
+    $delayTime = $_POST['delayTime'];
+    if (isset($delayTime) && !empty($delayTime))
+    {
+        if(!file_put_contents($delayTimeFile, ''.$delayTime))
+        {
+            addMsg('FAILED TO WRITE ' . $delayTime . ' TO ' . $delayTimeFile);
+        }
+        else
+        {
+            addMsg('Set delayTime to ' . $delayTime);
+        }
+    }
+    // the variable was not set, we need to read the max_volume.txt file
+    else
+    {
+        addMsg("No value set for delayTime, not writing to delayTimeFile.");
+        $delayTime = file_get_contents($delayTimeFile);
+        addMsg('Read delayTime from file.');
+    }
+    
+    // sets watering time
+    $wateringTimeFile = $settingsRoot . 'watering_time_milliseconds.txt';
+    $wateringTime = $_POST['wateringTime'];
+    if (isset($wateringTime) && !empty($wateringTime))
+    {
+        if(!file_put_contents($wateringTimeFile, ''.$wateringTime))
+        {
+            addMsg('FAILED TO WRITE ' . $wateringTime . ' TO ' . $wateringTimeFile);
+        }
+        else
+        {
+            addMsg('Set wateringTime to ' . $wateringTime);
+        }
+    }
+    // the variable was not set, we need to read the max_volume.txt file
+    else
+    {
+        addMsg("No value set for wateringTime, not writing to wateringTimeFile.");
+        $wateringTime = file_get_contents($wateringTimeFile);
+        addMsg('Read wateringTime from file.');
+    }
 
 	//sets current volume to max volume
 	$currentVolumeFile = $settingsRoot . 'current_volume.txt';
@@ -259,7 +303,13 @@
                 echo '<input type="text" name="waterContent'.$i.'" value="' . $content . '"/></br>';
             }
             ?>
-
+            
+            <h2>Pump Settings</h2>
+            <label>Seconds to delay after pumping: </label>
+            <input type='text' name='delayTime' value="<?php echo $delayTime;?>"/></br>
+            <label>Milliseconds to pump: </label>
+            <input type='text' name='wateringTime' value="<?php echo $wateringTime;?>"/></br>
+            
             <h2>Email Alert Subscribers</h2>
             <textarea rows="<?php echo $numSubscribers;?>" cols="50" name="alertSubscribers"><?php echo $alertSubscribers;?></textarea>
 			</br></br>
