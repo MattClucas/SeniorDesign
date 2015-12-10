@@ -163,6 +163,8 @@ def getAlertSubscribers():
 
 # notify by email when water level is low
 def emailAlert():
+    if LOGGING:
+        print "Entering emailAlert"
     sender = 'iastateplantalerts@gmail.com'
     receivers = getAlertSubscribers()
     msg = MIMEMultipart()
@@ -186,6 +188,8 @@ def emailAlert():
 
 # Checks the difference in water value and sends an alert if necassary
 def checkWaterVolume(volumeChange):
+    if LOGGING:
+        print "Entering checkWaterVolume"
     global alertSent
     currentVolume = getCurrentVolume()
     # If current volume == max volume we refilled the water container, set alertSent = False
@@ -213,6 +217,31 @@ def checkWaterVolume(volumeChange):
         alertSent = True
         print 'alert sent to true after sending email'
 
+# Updates number of plants on Pi and Arduino if the value stored in /plant/settings/num_plants.txt is different than numPlants
+def updateNumberPlants
+    if LOGGING:
+        print "Entering updateNumberPlants"
+    numPlantsNew = getNumPlants()
+    if numPlants != numPlantsNew
+        numPlants = numPlantsNew
+        #First byte is not 'M' since this is only packet, Second is an 'N' for number of plants changed
+        packet = '0N' + str(getNumPlants())
+        sendPacket(packet)
+
+# Sends packet to Arduino, if no 'ACK' is recieved resends
+def sendPacket(packet)
+    if LOGGING:
+        print "Entering getAlertSubscribers()"
+        print packet
+    ser.write(packet)
+    while 1:
+        readLine = ser.readline().upper().strip()
+        print readLine
+        if readLine == 'ACK':
+            break
+        if readLine == 'LEAVING HANDLESERIALMSG()':
+            ser.write(packet)
+
 # initialize number of plants
 numPlants = getNumPlants()
 
@@ -239,16 +268,7 @@ while 1:
             readWaterContent();
             # send any changes to the arduino in the form of message packets
             for packet in getPackets():
-                if LOGGING:
-                    print packet
-                ser.write(packet)
-                while 1:
-                    readLine = ser.readline().upper().strip()
-                    print readLine
-                    if readLine == 'ACK':
-                        break
-                    if readLine == 'LEAVING HANDLESERIALMSG()':
-                        ser.write(packet)
+                sendPacket(packet)
             # now that the packets have been sent, update the previous water content
             previousWaterContent = waterContent
 

@@ -2,16 +2,19 @@ int TIME_BETWEEN_READINGS_SECONDS = 5;//10*60;// 10 mins* 60 seconds
 unsigned long WATERING_TIME_MILLISECONDS = 3 * 1000; // 30 seconds * 1000 ms ~ 27.5 mL
 
 // the water level which turns on the pump to water the plant
-int PLANT_WATER_THRESHOLDS[] = {300, 300, 300, 300};
+int PLANT_WATER_THRESHOLDS[] = {1023, 1023, 1023, 1023,
+                                1023, 1023, 1023, 1023,
+                                1023, 1023, 1023, 1023,
+                                1023, 1023, 1023, 1023
+                                };
 int NUM_PLANTS = 4;
 
-int pump_pins[] = {2, 3, 4, 5};
-int mux_sel0 = 8;
-int mux_sel1 = 9;
-int mux_sel2 = 10;
-int mux_sel3 = 11;
-int mux_output = A0;
-int mux_output2 = A1;
+int PLANT_SELECT_PINS[] = {2, 3, 4, 5};
+int ENABLE_PUMPS = 8;
+int ENABLE_THICKNESS_SENSORS = 7;
+int ENABLE_MOISTURE_SENSORS = 6;
+int THICKNESS_SENSOR_PIN = A0;
+int MOISTURE_SENSOR_PIN = A1;
 
 int currentPlant = 0;
 int soil_sensor = 0;
@@ -19,54 +22,27 @@ int leaf_sensor = 0;
 
 void setup() {
   Serial.begin(9600);
-  pinMode(pump_pins[0], OUTPUT);
-  pinMode(pump_pins[1], OUTPUT);
-  pinMode(pump_pins[2], OUTPUT);
-  pinMode(pump_pins[3], OUTPUT);
-  pinMode(mux_sel0, OUTPUT);
-  pinMode(mux_sel1, OUTPUT);
-  pinMode(mux_sel2, OUTPUT);
-  pinMode(mux_sel3, OUTPUT);
-  digitalWrite(pump_pins[0], HIGH);
-  digitalWrite(pump_pins[1], HIGH);
-  digitalWrite(pump_pins[2], HIGH);
-  digitalWrite(pump_pins[3], HIGH);
+  pinMode(PLANT_SELECT_PINS[0], OUTPUT);
+  pinMode(PLANT_SELECT_PINS[1], OUTPUT);
+  pinMode(PLANT_SELECT_PINS[2], OUTPUT);
+  pinMode(PLANT_SELECT_PINS[3], OUTPUT);
+  pinMode(ENABLE_THICKNESS_SENSORS, OUTPUT);
+  pinMode(ENABLE_MOISTURE_SENSORS, OUTPUT);
+  digitalWrite(ENABLE_THICKNESS_SENSORS, LOW);
+  digitalWrite(ENABLE_MOISTURE_SENSORS, LOW);
+  digitalWrite(PLANT_SELECT_PINS[0], HIGH);
+  digitalWrite(PLANT_SELECT_PINS[1], HIGH);
+  digitalWrite(PLANT_SELECT_PINS[2], HIGH);
+  digitalWrite(PLANT_SELECT_PINS[3], HIGH);
 }
 
 void loop() {
-    // turn on mux for appropriate plant
-    switch(currentPlant) {
-      case 0:
-        digitalWrite(mux_sel0, LOW);
-        digitalWrite(mux_sel1, LOW);
-        digitalWrite(mux_sel2, LOW);
-        digitalWrite(mux_sel3, LOW);
-        break;
-      case 1:
-        digitalWrite(mux_sel0, HIGH);
-        digitalWrite(mux_sel1, LOW);
-        digitalWrite(mux_sel2, LOW);
-        digitalWrite(mux_sel3, LOW);
-        break;
-      case 2:
-        digitalWrite(mux_sel0, LOW);
-        digitalWrite(mux_sel1, HIGH);
-        digitalWrite(mux_sel2, LOW);
-        digitalWrite(mux_sel3, LOW);
-        break;
-      case 3:
-        digitalWrite(mux_sel0, HIGH);
-        digitalWrite(mux_sel1, HIGH);
-        digitalWrite(mux_sel2, LOW);
-        digitalWrite(mux_sel3, LOW);
-        break;
-      default:
-        break;
-    }
+    // select appropriate plant
+    selectPlant(currentPlant);
     
     // read sensors of plant
-    soil_sensor = analogRead(mux_output);
-    leaf_sensor = analogRead(mux_output2);
+    soil_sensor = analogRead(THICKNESS_SENSOR_PIN);
+    leaf_sensor = analogRead(MOISTURE_SENSOR_PIN);
     boolean turnOnPump = PLANT_WATER_THRESHOLDS[currentPlant] < soil_sensor;
 
     // write output for plant
@@ -84,9 +60,9 @@ void loop() {
     if(turnOnPump)
     {
         // turn on pumps
-        digitalWrite(pump_pins[currentPlant], LOW);
+        digitalWrite(ENABLE_PUMPS, LOW);
         delay(WATERING_TIME_MILLISECONDS); 
-        digitalWrite(pump_pins[currentPlant], HIGH);
+        digitalWrite(ENABLE_PUMPS, HIGH);
     }
 
     // increment current plant
@@ -104,6 +80,14 @@ void loop() {
     {
         currentPlant++;
     }
+}
+
+void selectPlant(int currentPlant)
+{
+    digitalWrite(PLANT_SELECT_PINS[3], currentPlant & 8 ? HIGH : LOW);
+    digitalWrite(PLANT_SELECT_PINS[2], currentPlant & 4 ? HIGH : LOW);
+    digitalWrite(PLANT_SELECT_PINS[1], currentPlant & 2 ? HIGH : LOW);
+    digitalWrite(PLANT_SELECT_PINS[0], currentPlant & 1 ? HIGH : LOW);
 }
 
 float getThickness(long raw)
@@ -130,6 +114,9 @@ void handleSerialMsg()
           {
             case 'W':
               ack = setWaterContent(input);
+              break;
+            case 'N':
+              //ack = setNumberPlants(input);
               break;
             default:
               break;
