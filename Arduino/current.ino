@@ -1,8 +1,13 @@
-String STUMPY_SET_NUM_PLANTS = 'N';
-String STUMPY_SET_WATER_CONTENT = 'W';
-String STUMPY_SET_WATERING_TIME_SECONDS = 'T';
-String STUMPY_SET_DELAY_TIME_SECONDS = 'D';
-int MINIMUM_TIME_TO_CHECK_MESSAGES_SECONDS = 60;
+#define STUMPY_SET_NUM_PLANTS 'N'
+#define STUMPY_SET_WATER_CONTENT 'W'
+#define STUMPY_SET_WATERING_TIME_SECONDS 'T'
+#define STUMPY_SET_DELAY_TIME_SECONDS 'D'
+#define MINIMUM_TIME_TO_CHECK_MESSAGES_SECONDS 60
+#define ENABLE_PUMPS 8
+#define ENABLE_THICKNESS_SENSORS 7
+#define ENABLE_MOISTURE_SENSORS 6
+#define THICKNESS_SENSOR_PIN A0
+#define MOISTURE_SENSOR_PIN A1
 
 // the water level which turns on the pump to water the plant
 double PLANT_WATER_THRESHOLDS[] = {
@@ -14,15 +19,11 @@ double PLANT_WATER_THRESHOLDS[] = {
 int NUM_PLANTS = 16;
 
 int PLANT_SELECT_PINS[] = {2, 3, 4, 5};
-int ENABLE_PUMPS = 8;
-int ENABLE_THICKNESS_SENSORS = 7;
-int ENABLE_MOISTURE_SENSORS = 6;
-int THICKNESS_SENSOR_PIN = A0;
-int MOISTURE_SENSOR_PIN = A1;
+
 
 int currentPlant = 0;
 int time_between_readings_seconds = 0;// Set by STUMPY //10*60;// 10 mins* 60 seconds
-unsigned float watering_time_seconds = 0; // Set by STUMPY //30 seconds * 1000 ms ~ 27.5 mL
+float watering_time_seconds = 0; // Set by STUMPY //30 seconds * 1000 ms ~ 27.5 mL
 
 void setup() {
   Serial.begin(9600);
@@ -48,7 +49,7 @@ void loop() {
     int soil_sensor = analogRead(THICKNESS_SENSOR_PIN);
     int leaf_sensor = analogRead(MOISTURE_SENSOR_PIN);
     float moisturePercentReading = getMoisturePercentage(soil_sensor);
-    boolean turnOnPump = PLANT_WATER_THRESHOLDS[currentPlant] < moisturePercentReading;
+    boolean turnOnPump = PLANT_WATER_THRESHOLDS[currentPlant] > moisturePercentReading;
 
     // write output for plant
     Serial.print("plant_id:");
