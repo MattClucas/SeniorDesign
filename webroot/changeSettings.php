@@ -92,7 +92,7 @@
     }
 
     // sets delayTime
-    $delayTimeFile = $settingsRoot . 'sleep_time_seconds.txt';
+    $delayTimeFile = $settingsRoot . 'delay_time_seconds.txt';
     $delayTime = $_POST['delayTime'];
     if (isset($delayTime) && !empty($delayTime))
     {
@@ -186,7 +186,7 @@
 
             // if this plants water content is not set or is not a number
             // there is an error, do not write to file
-            if (!isset($content) || empty($content) || !is_float($content))
+            if ((!isset($content) || empty($content) || !is_float($content)) && $content !== 0.0)
             {
                 $waterContentStr = null;
                 addMsg("Water Content not set or not a number for plant ".$i.". Not writing water content at all.");
@@ -285,64 +285,87 @@
 <html>
     <head>
         <title>Change Settings</title>
+        <!-- Style sheets -->
+        <link rel="stylesheet" type="text/css" href="css/bootstrap.min.css">
+        <link rel="stylesheet" type="text/css" href="css/style.css">
+        <link rel="stylesheet" type="text/css" href="css/bootstrap-theme.min.css">
+        <style>
+            .content
+            {
+                width: 90%;
+                margin-left: 5%;
+            }
+            .plantchart
+            {
+                float:left;
+                padding-left: 10px;
+            }
+            .container
+            {
+                display: inline-block;
+            }
+        </style>
     </head>
-    <body>
-        <h1>Change Settings</h1>
-        <a href="index.php">Home</a></br></br>
-        <h2>Plant Settings</h2>
-        <form action='changeSettings.php' method='post'>
-            <label>Number of Plants: </label>
-            <input type='text' name='numPlants' value="<?php echo $numPlants;?>"/></br>
+    
+    <div class="container">
+        <body>
+            <h1>Change Settings</h1>
+            <a href="index.php">Home</a></br></br>
+            <h2>Plant Settings</h2>
+            <form action='changeSettings.php' method='post'>
+                <label>Number of Plants: </label>
+                <input type='text' name='numPlants' value="<?php echo $numPlants;?>"/></br>
 
-            <?php
-            $contentCount = count($waterContent);
-            for($i=0;$i<$numPlants;$i++)
-            {
-                $content = $contentCount >= $i ? $waterContent[$i] : '';
-                echo '<label>Threshold for plant' . $i . ' </label>';
-                echo '<input type="text" name="waterContent'.$i.'" value="' . $content . '"/></br>';
-            }
-            ?>
-
-            <h2>Pump Settings</h2>
-            <label>Seconds to delay after pumping: </label>
-            <input type='text' name='delayTime' value="<?php echo $delayTime;?>"/></br>
-            <label>Seconds to pump: </label>
-            <input type='text' id="secondsToPump" name='wateringTimeSeconds' value="<?php echo round($wateringTimeSeconds,2);?>"/></br>
-            <label>Millilitres to pump: </label>
-            <input type='text'  id="millilitersToPump" value="<?php echo round($wateringTimeSeconds * (55.004 / 60.0),2);?>"/></br>
-
-            <script>
-            function roundToHundreth(num)
-            {
-                return Math.ceil(num* 100) / 100;
-            }
-
-            var secondsToPump = document.getElementById('secondsToPump');
-                secondsToPump.onkeyup = function(){
-                    document.getElementById('millilitersToPump').value = roundToHundreth(secondsToPump.value * (55.004 / 60.0));
+                <?php
+                $contentCount = count($waterContent);
+                for($i=0;$i<$numPlants;$i++)
+                {
+                    $content = $contentCount >= $i ? $waterContent[$i] : '';
+                    echo '<label>Threshold for plant' . $i . ' </label> ';
+                    echo '<input type="text" name="waterContent'.$i.'" value="' . $content . '"/></br>';
                 }
+                ?>
 
-            var mLToPump = document.getElementById('millilitersToPump');
-                mLToPump.onkeyup = function(){
-                    document.getElementById('secondsToPump').value = roundToHundreth(mLToPump.value * (60.0 / 55.004));
-                }
-            </script>
+                <h2>Pump Settings</h2>
+                <label>Seconds to delay after pumping: </label>
+                <input type='text' name='delayTime' value="<?php echo $delayTime;?>"/></br>
+                <label>Seconds to pump: </label>
+                <input type='text' id="secondsToPump" name='wateringTimeSeconds' value="<?php echo round($wateringTimeSeconds,2);?>"/></br>
+                <label>Millilitres to pump: </label>
+                <input type='text'  id="millilitersToPump" value="<?php echo round($wateringTimeSeconds * (55.004 / 60.0),2);?>"/></br>
 
-            <h2>Email Alert Subscribers</h2>
-            <textarea rows="<?php echo $numSubscribers;?>" cols="50" name="alertSubscribers"><?php echo $alertSubscribers;?></textarea>
-			</br></br>
+                <h2>Email Alert Subscribers</h2>
+                <textarea rows="<?php echo $numSubscribers;?>" cols="50" name="alertSubscribers"><?php echo $alertSubscribers;?></textarea>
+                </br></br>
 
-            <label>Fill-line volume (mL): </label>
-            <input type='text' name='maxVolume' value="<?php echo $maxVolume;?>"/></br></br>
+                <label>Fill-line volume (mL): </label>
+                <input type='text' name='maxVolume' value="<?php echo $maxVolume;?>"/></br></br>
 
-            <label>Alert at water volume (mL): </label>
-            <input type='text' name='alertVolume' value="<?php echo $alertVolume;?>"/></br></br>
+                <label>Alert at water volume (mL): </label>
+                <input type='text' name='alertVolume' value="<?php echo $alertVolume;?>"/></br></br>
 
-			<label>Reset current volume to fill line </label>
-			<input type='checkbox' name='resetCurrentVolume'/></br></br>
-            <input type='submit'/>
-        </form>
-        <div id="messageDiv"><?php echo $message;?></div>
-    </body>
+                <label>Reset current volume to fill line </label>
+                <input type='checkbox' name='resetCurrentVolume'/></br></br>
+                <input type='submit'/>
+            </form>
+            <div id="messageDiv"><?php echo $message;?></div>
+        </body>
+    </div>
 </html>
+
+<script>
+function roundToHundreth(num)
+{
+    return Math.ceil(num* 100) / 100;
+}
+
+var secondsToPump = document.getElementById('secondsToPump');
+secondsToPump.onkeyup = function(){
+    document.getElementById('millilitersToPump').value = roundToHundreth(secondsToPump.value * (55.004 / 60.0));
+}
+
+var mLToPump = document.getElementById('millilitersToPump');
+mLToPump.onkeyup = function(){
+    document.getElementById('secondsToPump').value = roundToHundreth(mLToPump.value * (60.0 / 55.004));
+}
+</script>

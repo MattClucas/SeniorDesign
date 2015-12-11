@@ -99,7 +99,7 @@ def getMaxVolume():
     file.close()
     if not isFloat(line):
         raise Exception('Max volume is not a number! Fix the settings/max_volume.txt file!')
-    return int(line)
+    return float(line)
 
 # reads the current_volume.txt file
 def getCurrentVolume():
@@ -110,7 +110,7 @@ def getCurrentVolume():
     file.close()
     if not isFloat(line):
         raise Exception('Current volume is not a number! Fix the settings/current_volume.txt file!')
-    return int(line)
+    return float(line)
 
 # reads the watering_time_seconds.txt file
 def getWateringTime():
