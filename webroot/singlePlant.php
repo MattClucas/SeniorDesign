@@ -31,7 +31,7 @@
     </head>
     <body>
         <div class="content">
-            <h1>Plant <?php echo $_GET['id'];?> Statistics</h1>
+            <h1>Plant <?php echo intval($_GET['id'])+1;?> Statistics</h1>
             <div>
                 <a href="changeSettings.php">Click here to change plant settings</a></br>
                 <a href="index.php">Home</a></br></br>

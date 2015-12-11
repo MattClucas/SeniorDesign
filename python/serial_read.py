@@ -59,7 +59,7 @@ def getPackets():
     delayTimeNew = getDelayTime()
     if delayTimeSeconds != delayTimeNew:
         delayTimeSeconds = delayTimeNew
-        packets.append('M' + STUMPY_SET_DELAY_TIME_SECONDS + str(wateringTimeNew))
+        packets.append('M' + STUMPY_SET_DELAY_TIME_SECONDS + str(delayTimeNew))
 
     # the last packet needs to have a header without the first 'M' so replace the first
     # letter with a '0'
@@ -211,7 +211,10 @@ def insertPlantData(data):
         print "Entering insertPlantData()"
     try:
         data['watered'] = int(data['watered']) * MILLILITERES_PER_SECOND * wateringTimeSecs
-        x.execute("""INSERT INTO PlantMonitor_Data(`PLANT_ID`,`MOISTURE_PERCENTAGE`,`LEAF_THICKNESS`,`WATER_USED_MILLILITERS`) VALUES (%s,%s,%s,%s)""",(data["plant_id"],data["soil"],data["leaf"],data["watered"]))
+        query = "INSERT INTO PlantMonitor_Data(`PLANT_ID`,`MOISTURE_PERCENTAGE`,`LEAF_THICKNESS`,`WATER_USED_MILLILITERS`) VALUES (" + str(data["plant_id"]) + "," + str(data["soil"]) + "," + str(data["leaf"]) + "," + str(data["watered"]) + ")"
+        if LOGGING:
+            print query
+        x.execute(query)
         conn.commit()
         return True
     except Exception, e:

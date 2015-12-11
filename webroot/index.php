@@ -33,6 +33,16 @@
     asort($waterUsage);
     asort($moistureAverage);
     asort($thicknessAverage);
+
+    function addOneToArray($arr)
+    {
+        $newArr = [];
+        for($i = 0; $i<count($arr);$i++)
+        {
+            $newArr[] = $arr[$i]+1;
+        }
+        return $newArr;
+    }
 ?>
 <!doctype html>
 <html>
@@ -75,7 +85,7 @@
             var moistureDataSet =
             {
                 labels :
-                <?php echo json_encode(array_keys($moistureAverage));?>,
+                <?php echo json_encode(addOneToArray(array_keys($moistureAverage)));?>,
                 datasets :
                 [
                     {
@@ -90,7 +100,7 @@
             var thicknessDataSet =
             {
                 labels :
-                <?php echo json_encode(array_keys($thicknessAverage));?>,
+                <?php echo json_encode(addOneToArray(array_keys($thicknessAverage)));?>,
                 datasets :
                 [
                     {
@@ -105,7 +115,7 @@
             var waterUsageDataSet =
             {
                 labels :
-                <?php echo json_encode(array_keys($waterUsage));?>,
+                <?php echo json_encode(addOneToArray(array_keys($waterUsage)));?>,
                 datasets :
                 [
                     {
@@ -163,34 +173,28 @@
                         <tr>
                             <th>Plant ID</th>
                             <th>Moisture Percentage</th>
-                            <th>Thickness</th>
-                            <th>Water Added</th>
-                            <th>Time</th>
+                            <th>Thickness (mm)</th>
+                            <th>Water Added (ml)</th>
+                            <th>Time UTC</th>
                         </tr>
                     </thead>
                     <tbody>
                     <?php
                         // select the latest readings from each plant
-                        $result = $db->query("SELECT PLANT_ID, " .
-                                                    "MOISTURE_PERCENTAGE, " .
-                                                    "LEAF_THICKNESS, " .
-                                                    "WATER_USED_MILLILITERS, " .
-                                                    "MAX(TIME) " .
-                                             "FROM PlantMonitor_Data " .
-                                             "GROUP BY PLANT_ID");
-
+                        $sql = "select * from ( select PLANT_ID, max(TIME) as maxTime from PlantMonitor_Data group by PLANT_ID ) as x inner join PlantMonitor_Data as f on f.PLANT_ID = x.PLANT_ID and f.TIME = x.maxTime;";
+                        $result = $db->query($sql);
                         // display each reading as a row in the table
                         foreach($result as $key => $val)
                         {
                     ?>
                         <tr>
                             <td>
-                                <a href="/singlePlant.php?id=<?php echo $val['PLANT_ID']; ?>"><?php echo $val['PLANT_ID']; ?></a>
+                                <a href="/singlePlant.php?id=<?php echo $val['PLANT_ID']; ?>"><?php echo intval($val['PLANT_ID'])+1; ?></a>
                             </td>
-                            <td><?php echo  $val['MOISTURE_PERCENTAGE']; ?></td>
-                            <td><?php echo  $val['LEAF_THICKNESS']; ?></td>
-                            <td><?php echo  $val['WATER_USED_MILLILITERS']; ?></td>
-                            <td><?php echo  date("F j, Y, g:i a", strtotime($val['TIME'])); ?></td>
+                            <td><?php echo $val['MOISTURE_PERCENTAGE']; ?></td>
+                            <td><?php echo $val['LEAF_THICKNESS']; ?></td>
+                            <td><?php echo $val['WATER_USED_MILLILITERS']; ?></td>
+                            <td><?php echo $val['TIME'];?></td>
                         </tr>
                     <?php
                     }
