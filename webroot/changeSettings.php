@@ -323,7 +323,7 @@
                 for($i=0;$i<$numPlants;$i++)
                 {
                     $content = $contentCount >= $i ? $waterContent[$i] : '';
-                    echo '<label>Threshold for plant' . $i . ' </label> ';
+                    echo '<label>Threshold for plant ' . ($i+1) . ' </label> ';
                     echo '<input type="text" name="waterContent'.$i.'" value="' . $content . '"/></br>';
                 }
                 ?>
@@ -356,18 +356,18 @@
 </html>
 
 <script>
-function roundToHundreth(num)
-{
-    return Math.ceil(num* 100) / 100;
-}
+    function roundToHundreth(num)
+    {
+        return Math.ceil(num* 100) / 100;
+    }
 
-var secondsToPump = document.getElementById('secondsToPump');
-secondsToPump.onkeyup = function(){
-    document.getElementById('millilitersToPump').value = roundToHundreth(secondsToPump.value * (55.004 / 60.0));
-}
+    var secondsToPump = document.getElementById('secondsToPump');
+    secondsToPump.onkeyup = function(){
+        document.getElementById('millilitersToPump').value = roundToHundreth(secondsToPump.value * (55.004 / 60.0));
+    }
 
-var mLToPump = document.getElementById('millilitersToPump');
-mLToPump.onkeyup = function(){
-    document.getElementById('secondsToPump').value = roundToHundreth(mLToPump.value * (60.0 / 55.004));
-}
+    var mLToPump = document.getElementById('millilitersToPump');
+    mLToPump.onkeyup = function(){
+        document.getElementById('secondsToPump').value = roundToHundreth(mLToPump.value * (60.0 / 55.004));
+    }
 </script>
