@@ -114,7 +114,8 @@ float getMoisturePercentage(long raw)
 
 float getThickness(long raw)
 {
-    return -(2 *(250 * raw - 167919)) / 54887.0;
+    //return -(2 *(250 * raw - 167919)) / 54887.0;
+    return -109.774 * raw + 671.676;
 }
 
 boolean handleSerialMsg()

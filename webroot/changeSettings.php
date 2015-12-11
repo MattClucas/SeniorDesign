@@ -181,7 +181,7 @@
         {
             // get the water content for this plant
             $content = $_POST['waterContent' . $i];
-            
+
 
             // if this plants water content is not set or is not a number
             // there is an error, do not write to file
@@ -308,7 +308,7 @@
             }
         </style>
     </head>
-    
+
     <div class="container">
         <body>
             <h1>Change Settings</h1>
