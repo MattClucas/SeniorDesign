@@ -27,15 +27,6 @@
                 width: 90%;
                 margin-left: 5%;
             }
-            .plantchart
-            {
-                float:left;
-                padding-left: 10px;
-            }
-            .container
-            {
-                display: inline-block;
-            }
         </style>
     </head>
     <body>

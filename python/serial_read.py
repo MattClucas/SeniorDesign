@@ -10,7 +10,7 @@ conn = MySQLdb.connect(host= "localhost",
                   passwd="8SEh2R7LsFQAJnuM",
                   db="plants")
 x = conn.cursor()
-LOGGING = False
+LOGGING = True
 ser = serial.Serial("/dev/ttyACM0", 9600)
 
 MILLILITERES_PER_SECOND = 55.004 / 60.0
@@ -20,7 +20,7 @@ waterContent = []
 previousWaterContent = []
 
 # initialize variables - will be updated by getPackets() with values from files in settings
-numPlants = 1
+numPlants = 16
 wateringTimeSecs = 0
 delayTimeSeconds = 0
 

@@ -181,17 +181,19 @@
         {
             // get the water content for this plant
             $content = $_POST['waterContent' . $i];
-            // cast to an int
-            $content = floatval($content);
+            
 
             // if this plants water content is not set or is not a number
             // there is an error, do not write to file
-            if ((!isset($content) || empty($content) || !is_float($content)) && $content !== 0.0)
+            if (!is_numeric($content))
             {
                 $waterContentStr = null;
                 addMsg("Water Content not set or not a number for plant ".$i.". Not writing water content at all.");
                 break;
             }
+
+            // cast to an float
+            $content = floatval($content);
 
             // concatenate waterContent String to write to file
             // appending a ',' on all but the last entries
