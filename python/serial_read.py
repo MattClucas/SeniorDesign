@@ -14,11 +14,15 @@ LOGGING = False
 ser = serial.Serial("/dev/ttyACM0", 9600)
 
 MILLILITERES_PER_SECOND = 55.004 / 60.0
-WATERING_SECONDS = 3
 
 # declare globals
 waterContent = []
 previousWaterContent = []
+
+# initialize variables - will be updated by getPackets() with values from files in settings
+numPlants = 1
+wateringTimeSecs = 0
+delayTimeSeconds = 0
 
 STUMPY_SET_NUM_PLANTS = 'N'
 STUMPY_SET_WATER_CONTENT_PERCENT = 'W'
@@ -93,7 +97,7 @@ def getMaxVolume():
     file = open('/plant/settings/max_volume.txt', 'r')
     line = file.readlines()[0]
     file.close()
-    if not isInteger(line):
+    if not isFloat(line):
         raise Exception('Max volume is not a number! Fix the settings/max_volume.txt file!')
     return int(line)
 
@@ -104,7 +108,7 @@ def getCurrentVolume():
     file = open('/plant/settings/current_volume.txt', 'r')
     line = file.readlines()[0]
     file.close()
-    if not isInteger(line):
+    if not isFloat(line):
         raise Exception('Current volume is not a number! Fix the settings/current_volume.txt file!')
     return int(line)
 
@@ -126,7 +130,7 @@ def getDelayTime():
     file = open('/plant/settings/delay_time_seconds.txt', 'r')
     line = file.readlines()[0]
     file.close()
-    if not isInteger(line):
+    if not isFloat(line):
         raise Exception('Delay time is not a number! Fix the settings/delay_time_seconds.txt file!')
     return int(line)
 
@@ -145,7 +149,7 @@ def getAlertVolume():
     file = open('/plant/settings/alert_volume.txt', 'r')
     line = file.readlines()[0]
     file.close()
-    if not isInteger(line):
+    if not isFloat(line):
         raise Exception('Alert volume is not a number! Fix the settings/alert_volume.txt file!')
     return int(line)
 
@@ -178,7 +182,7 @@ def isValidWaterContentEntry(line):
         return False
     for entry in line:
         entry.strip()
-        if not isInteger(entry):
+        if not isFloat(entry):
             return False
     return True
 
@@ -206,7 +210,7 @@ def insertPlantData(data):
     if LOGGING:
         print "Entering insertPlantData()"
     try:
-        data['watered'] = int(data['watered']) * MILLILITERES_PER_SECOND * WATERING_SECONDS
+        data['watered'] = int(data['watered']) * MILLILITERES_PER_SECOND * wateringTimeSecs
         x.execute("""INSERT INTO PlantMonitor_Data(`PLANT_ID`,`MOISTURE_PERCENTAGE`,`LEAF_THICKNESS`,`WATER_USED_MILLILITERS`) VALUES (%s,%s,%s,%s)""",(data["plant_id"],data["soil"],data["leaf"],data["watered"]))
         conn.commit()
         return True
@@ -292,11 +296,6 @@ def sendPacket(packet):
         if readLine == 'LEAVING HANDLESERIALMSG()':
             ser.write(packet)
 
-# initialize variables - will be updated by getPackets() with values from files in settings
-numPlants = 1
-wateringTimeSecs = 0
-delayTimeSeconds = 0
-
 # See if an email has alerted the user of a low water content
 alertSent = getCurrentVolume() < getAlertVolume()
 print 'alertSent global = ' + str(alertSent)
@@ -313,7 +312,7 @@ while 1:
             data[key_val[0]] = key_val[1]
     print input_line
     if insertPlantData(data):
-        checkWaterVolume(int(data['watered']))
+        checkWaterVolume(data['watered'])
         # message the arduino to change thresholds
         if data["plant_id"] == str(numPlants - 1):
             # read if there are any changes to the water contents

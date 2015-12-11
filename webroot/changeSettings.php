@@ -96,7 +96,7 @@
     $delayTime = $_POST['delayTime'];
     if (isset($delayTime) && !empty($delayTime))
     {
-        if(!file_put_contents($delayTimeFile, ''.$delayTime))
+        if(!file_put_contents($delayTimeFile, ''.round($delayTime)))
         {
             addMsg('FAILED TO WRITE ' . $delayTime . ' TO ' . $delayTimeFile);
         }

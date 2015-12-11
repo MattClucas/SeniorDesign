@@ -5,7 +5,7 @@ String STUMPY_SET_DELAY_TIME_SECONDS = 'D';
 int MINIMUM_TIME_TO_CHECK_MESSAGES_SECONDS = 60;
 
 // the water level which turns on the pump to water the plant
-float PLANT_WATER_THRESHOLDS[] = {
+double PLANT_WATER_THRESHOLDS[] = {
                                     0.0, 0.0, 0.0, 0.0,
                                     0.0, 0.0, 0.0, 0.0,
                                     0.0, 0.0, 0.0, 0.0,
@@ -22,7 +22,7 @@ int MOISTURE_SENSOR_PIN = A1;
 
 int currentPlant = 0;
 int time_between_readings_seconds = 0;// Set by STUMPY //10*60;// 10 mins* 60 seconds
-unsigned long watering_time_seconds = 0; // Set by STUMPY //30 seconds * 1000 ms ~ 27.5 mL
+unsigned float watering_time_seconds = 0; // Set by STUMPY //30 seconds * 1000 ms ~ 27.5 mL
 
 void setup() {
   Serial.begin(9600);
@@ -236,6 +236,6 @@ String setDelayTime(String packet)
 
 String setWateringTime(String packet)
 {
-    watering_time_seconds = packet.substring(2).toInt();
+    watering_time_seconds = packet.substring(2).toFloat();
     return "ACK";
 }
