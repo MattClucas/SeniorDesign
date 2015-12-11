@@ -90,7 +90,7 @@
         $maxVolume = file_get_contents($maxVolumeFile);
         addMsg('Read maxVolume from file.');
     }
-    
+
     // sets delayTime
     $delayTimeFile = $settingsRoot . 'sleep_time_seconds.txt';
     $delayTime = $_POST['delayTime'];
@@ -112,27 +112,27 @@
         $delayTime = file_get_contents($delayTimeFile);
         addMsg('Read delayTime from file.');
     }
-    
+
     // sets watering time
-    $wateringTimeFile = $settingsRoot . 'watering_time_milliseconds.txt';
-    $wateringTime = $_POST['wateringTime'];
-    if (isset($wateringTime) && !empty($wateringTime))
+    $wateringTimeSecondsFile = $settingsRoot . 'watering_time_seconds.txt';
+    $wateringTimeSeconds = $_POST['wateringTimeSeconds'];
+    if (isset($wateringTimeSeconds) && !empty($wateringTimeSeconds))
     {
-        if(!file_put_contents($wateringTimeFile, ''.$wateringTime))
+        if(!file_put_contents($wateringTimeSecondsFile, ''.round($wateringTimeSeconds,2)))
         {
-            addMsg('FAILED TO WRITE ' . $wateringTime . ' TO ' . $wateringTimeFile);
+            addMsg('FAILED TO WRITE ' . $wateringTimeSeconds . ' TO ' . $wateringTimeSecondsFile);
         }
         else
         {
-            addMsg('Set wateringTime to ' . $wateringTime);
+            addMsg('Set wateringTimeSeconds to ' . $wateringTimeSeconds);
         }
     }
     // the variable was not set, we need to read the max_volume.txt file
     else
     {
-        addMsg("No value set for wateringTime, not writing to wateringTimeFile.");
-        $wateringTime = file_get_contents($wateringTimeFile);
-        addMsg('Read wateringTime from file.');
+        addMsg("No value set for wateringTimeSeconds, not writing to wateringTimeSecondsFile.");
+        $wateringTimeSeconds = file_get_contents($wateringTimeSecondsFile);
+        addMsg('Read wateringTimeSeconds from file.');
     }
 
 	//sets current volume to max volume
@@ -303,13 +303,32 @@
                 echo '<input type="text" name="waterContent'.$i.'" value="' . $content . '"/></br>';
             }
             ?>
-            
+
             <h2>Pump Settings</h2>
             <label>Seconds to delay after pumping: </label>
             <input type='text' name='delayTime' value="<?php echo $delayTime;?>"/></br>
-            <label>Milliseconds to pump: </label>
-            <input type='text' name='wateringTime' value="<?php echo $wateringTime;?>"/></br>
-            
+            <label>Seconds to pump: </label>
+            <input type='text' id="secondsToPump" name='wateringTimeSeconds' value="<?php echo round($wateringTimeSeconds,2);?>"/></br>
+            <label>Millilitres to pump: </label>
+            <input type='text'  id="millilitersToPump" value="<?php echo round($wateringTimeSeconds * (55.004 / 60.0),2);?>"/></br>
+
+            <script>
+            function roundToHundreth(num)
+            {
+                return Math.ceil(num* 100) / 100;
+            }
+
+            var secondsToPump = document.getElementById('secondsToPump');
+                secondsToPump.onkeyup = function(){
+                    document.getElementById('millilitersToPump').value = roundToHundreth(secondsToPump.value * (55.004 / 60.0));
+                }
+
+            var mLToPump = document.getElementById('millilitersToPump');
+                mLToPump.onkeyup = function(){
+                    document.getElementById('secondsToPump').value = roundToHundreth(mLToPump.value * (60.0 / 55.004));
+                }
+            </script>
+
             <h2>Email Alert Subscribers</h2>
             <textarea rows="<?php echo $numSubscribers;?>" cols="50" name="alertSubscribers"><?php echo $alertSubscribers;?></textarea>
 			</br></br>

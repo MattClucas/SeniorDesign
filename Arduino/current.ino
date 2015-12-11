@@ -1,7 +1,8 @@
 String STUMPY_SET_NUM_PLANTS = 'N';
 String STUMPY_SET_WATER_CONTENT = 'W';
-String STUMPY_SET_WATERING_TIME = 'T';
-String STUMPY_SET_DELAY_TIME = 'S';
+String STUMPY_SET_WATERING_TIME_SECONDS = 'T';
+String STUMPY_SET_DELAY_TIME_SECONDS = 'D';
+int MINIMUM_TIME_TO_CHECK_MESSAGES_SECONDS = 60;
 
 // the water level which turns on the pump to water the plant
 float PLANT_WATER_THRESHOLDS[] = {
@@ -21,7 +22,7 @@ int MOISTURE_SENSOR_PIN = A1;
 
 int currentPlant = 0;
 int time_between_readings_seconds = 0;// Set by STUMPY //10*60;// 10 mins* 60 seconds
-unsigned long watering_time_milliseconds = 0; // Set by STUMPY //30 seconds * 1000 ms ~ 27.5 mL
+unsigned long watering_time_seconds = 0; // Set by STUMPY //30 seconds * 1000 ms ~ 27.5 mL
 
 void setup() {
   Serial.begin(9600);
@@ -66,7 +67,7 @@ void loop() {
         // turn on pumps
         // enable is switched, low=on, high=off
         digitalWrite(ENABLE_PUMPS, LOW);
-        delay(watering_time_milliseconds);
+        delay(watering_time_seconds * 1000);
         digitalWrite(ENABLE_PUMPS, HIGH);
     }
 
@@ -78,6 +79,11 @@ void loop() {
         int i=0;
         for(;i<time_between_readings_seconds;i++)
         {
+            //look for new messages at least every minute
+            if (i % MINIMUM_TIME_TO_CHECK_MESSAGES_SECONDS == 0 && handleSerialMsg())
+            {
+                break;
+            }
             delay(1000);
         }
     }
@@ -111,8 +117,9 @@ float getThickness(long raw)
     return -(2 *(250 * raw - 167919)) / 54887.0;
 }
 
-void handleSerialMsg()
+boolean handleSerialMsg()
 {
+  boolean hasMessage = false;
   while(true)
   {
     Serial.println("Entering handleSerialMsg() while loop");
@@ -126,6 +133,7 @@ void handleSerialMsg()
       String ack = "";
       if (input.length() > 1)
       {
+          hasMessage = true;
           switch (input[1])
           {
             case STUMPY_SET_WATER_CONTENT:
@@ -134,10 +142,10 @@ void handleSerialMsg()
             case STUMPY_SET_NUM_PLANTS:
               ack = setNumberPlants(input);
               break;
-            case STUMPY_SET_DELAY_TIME:
+            case STUMPY_SET_DELAY_TIME_SECONDS:
               ack = setDelayTime(input);
               break;
-            case STUMPY_SET_WATERING_TIME:
+            case STUMPY_SET_WATERING_TIME_SECONDS:
               ack = setWateringTime(input);
               break;
             default:
@@ -167,6 +175,7 @@ void handleSerialMsg()
         break;
     }
   }
+  return hasMessage;
 }
 
 void sendAck(String ack)
@@ -227,6 +236,6 @@ String setDelayTime(String packet)
 
 String setWateringTime(String packet)
 {
-    watering_time_milliseconds = packet.substring(2).toInt();
+    watering_time_seconds = packet.substring(2).toInt();
     return "ACK";
 }

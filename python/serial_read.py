@@ -21,42 +21,41 @@ waterContent = []
 previousWaterContent = []
 
 STUMPY_SET_NUM_PLANTS = 'N'
-STUMPY_SET_WATER_CONTENT = 'W'
-STUMPY_SET_WATERING_TIME = 'T'
-STUMPY_SET_DELAY_TIME = 'S'
+STUMPY_SET_WATER_CONTENT_PERCENT = 'W'
+STUMPY_SET_WATERING_TIME_SECONDS = 'T'
+STUMPY_SET_DELAY_TIME_SECONDS = 'D'
 
 # generates change packets to send to the arduino
 def getPackets():
     if LOGGING:
         print "Entering getPackets()"
     packets = []
-    
+
     #gets number of plants packet
     global numPlants
     numPlantsNew = getNumPlants()
     if numPlants != numPlantsNew:
         numPlants = numPlantsNew
         packets.append('M' + STUMPY_SET_NUM_PLANTS + str(numPlants))
-        
+
     #gets changed water content packets
     for i in range(numPlants):
         if isDiffWaterContent(i):
-            packets.append('M' + STUMPY_SET_WATER_CONTENT + str(i) + ',' + str(waterContent[i]))
-            
+            packets.append('M' + STUMPY_SET_WATER_CONTENT_PERCENT + str(i) + ',' + str(waterContent[i]))
+
     #gets watering time packet
-    global wateringTimeMs
+    global wateringTimeSecs
     wateringTimeNew = getWateringTime()
-    if wateringTimeMs != wateringTimeNew:
-        wateringTimeMs = wateringTimeNew
-        packets.append('M' + STUMPY_SET_WATERING_TIME + str(wateringTimeNew))
-    
+    if wateringTimeSecs != wateringTimeNew:
+        wateringTimeSecs = wateringTimeNew
+        packets.append('M' + STUMPY_SET_WATERING_TIME_SECONDS + str(wateringTimeNew))
+
     #gets delay time packet
-    global sleepTimeSeconds
-    sleepTimeNew = getSleepTime()
-    if sleepTimeSeconds != sleepTimeNew:
-        sleepTimeSeconds = sleepTimeNew
-        packets.append('M' + STUMPY_SET_DELAY_TIME + str(wateringTimeNew))
-    
+    global delayTimeSeconds
+    delayTimeNew = getDelayTime()
+    if delayTimeSeconds != delayTimeNew:
+        delayTimeSeconds = delayTimeNew
+        packets.append('M' + STUMPY_SET_DELAY_TIME_SECONDS + str(wateringTimeNew))
 
     # the last packet needs to have a header without the first 'M' so replace the first
     # letter with a '0'
@@ -108,29 +107,29 @@ def getCurrentVolume():
     if not isInteger(line):
         raise Exception('Current volume is not a number! Fix the settings/current_volume.txt file!')
     return int(line)
-    
-# reads the watering_time_milliseconds.txt file
+
+# reads the watering_time_seconds.txt file
 def getWateringTime():
     if LOGGING:
         print "Entering getWateringTime()"
-    file = open('/plant/settings/watering_time_milliseconds.txt', 'r')
+    file = open('/plant/settings/watering_time_seconds.txt', 'r')
+    line = file.readlines()[0]
+    file.close()
+    if not isFloat(line):
+        raise Exception('Watering time is not a number! Fix the settings/watering_time_seconds.txt file!')
+    return float(line)
+
+# reads the delay_time_seconds.txt file
+def getDelayTime():
+    if LOGGING:
+        print "Entering getDelayTime()"
+    file = open('/plant/settings/delay_time_seconds.txt', 'r')
     line = file.readlines()[0]
     file.close()
     if not isInteger(line):
-        raise Exception('Watering time is not a number! Fix the settings/watering_time_milliseconds.txt file!')
+        raise Exception('Delay time is not a number! Fix the settings/delay_time_seconds.txt file!')
     return int(line)
 
-# reads the sleep_time_seconds.txt file
-def getSleepTime():
-    if LOGGING:
-        print "Entering getSleepTime()"
-    file = open('/plant/settings/sleep_time_seconds.txt', 'r')
-    line = file.readlines()[0]
-    file.close()
-    if not isInteger(line):
-        raise Exception('Sleep time is not a number! Fix the settings/sleep_time_seconds.txt file!')
-    return int(line)    
-    
 # set the current_volume.txt file
 def setCurrentVolume(value):
     if LOGGING:
@@ -193,6 +192,16 @@ def isInteger(str):
     except ValueError:
         return False
 
+# checks if the given string is a float
+def isFloat(string):
+    if LOGGING:
+        print "Entering isFloat()"
+    try:
+        float(string)
+        return True
+    except ValueError:
+        return False
+
 def insertPlantData(data):
     if LOGGING:
         print "Entering insertPlantData()"
@@ -249,20 +258,20 @@ def checkWaterVolume(volumeChange):
         alertSent = False
         print 'current vol equals max, set alertSent to false'
     previousWaterContent = currentVolume
-    
+
     # If fill line changes we have changed water containers, set alertSent to false
     global fillLine
     if fillLine != getMaxVolume():
         alertSent = False
         fillLine = getMaxVolume()
         print 'fillLine changed, set alertSent to false'
-        
+
     #Subtract water pumped from current volume
     print 'previous volume is ' + str(previousWaterContent)
     currentVolume = currentVolume-volumeChange
     setCurrentVolume(currentVolume)
     print 'current volume is ' + str(getCurrentVolume())
-    
+
     #If we have less volume than our alert, send an email to all users
     if currentVolume < getAlertVolume() and not alertSent:
         emailAlert()
@@ -285,8 +294,8 @@ def sendPacket(packet):
 
 # initialize variables - will be updated by getPackets() with values from files in settings
 numPlants = 1
-wateringTimeMs = 0
-sleepTimeSeconds = 0
+wateringTimeSecs = 0
+delayTimeSeconds = 0
 
 # See if an email has alerted the user of a low water content
 alertSent = getCurrentVolume() < getAlertVolume()
